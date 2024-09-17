@@ -5,6 +5,7 @@ Project one Fridge inventory system
 '''
 
 import sqlite3
+import datetime
 '''
 class Item:
     def __init__(self):
@@ -60,7 +61,7 @@ class Database:
 
         self.rows = self.cur.fetchall()
 
-        print(f"{'NAME':<10}{'QUANTITY':<10}{'EXPIRATION':<10}")
+        print(f"\n{'NAME':<10}{'QUANTITY':<10}{'EXPIRATION':<10}")
         print("-" * 30)
 
         for row in self.rows:
@@ -78,6 +79,14 @@ class Database:
         self.cur.execute("DELETE FROM volumes WHERE name = ? AND volume = ?",(name, volume))
         self.items.commit()
 
+    def empty_fridge(self):
+        self.cur.execute("DELETE from fridge_contents")
+        self.items.commit()
+
+    def remove_expired(self):
+        self.cur.execute("DELETE from fridge_contents WHERE expiration < DATE('now')")
+        self.items.commit()
+
     def show_volumes(self):
         self.cur.execute("SELECT * FROM volumes")
 
@@ -91,10 +100,48 @@ class Database:
 
 def main():
     db = Database()
+    choice = ""
+    name = ""
+    qty = 0
+    date = ""
 
-    db.insert_into_fridge_contents("Nathan", 2, "09/09/2024")
-    db.insert_into_fridge_contents("Riley", 3, "09/09/2024")
+    while choice != '0': # prompt for user input in menu
+        print("\n1 - Add something to the fridge")
+        print("2 - Remove something from the fridge")
+        print("3 - View fridge contents")
+        print("4 - Remove expired items")
+        print("5 - Empty fridge")
+        print("0 - Exit")
+        choice = input("What would you like to do? ")
 
-    db.show_fridge_contents()
+        if choice == '0': # exit case
+            print("Exiting...")
+        elif choice == '1': # add to fridge using UI
+            name = input("What are you adding? ")
+            qty = input("How many? ")
+            date = input("When does it expire (YYYY/MM/DD)? ")
+            year,month,day = map(int,date.split('/'))
+            exp_date = datetime.date(year, month, day)
+            db.insert_into_fridge_contents(name, qty, exp_date)
+            db.show_fridge_contents()
+        elif choice == '2': # remove from fridge using UI
+            name = input("What are you removing? ")
+            date = input("When does it expire (YYYY/MM/DD)? ")
+            year, month, day = map(int, date.split('/'))
+            exp_date = datetime.date(year, month, day)
+            db.delete_fridge_contents(name, exp_date)
+            db.show_fridge_contents()
+        elif choice == '3': # show contents of fridge
+            db.show_fridge_contents()
+        elif choice == '4': # NEED TO IMPLEMENT compare db entries expiration against today
+            print("Removing expired items...")
+            db.remove_expired()
+            db.show_fridge_contents()
+        elif choice == '5':
+            db.empty_fridge()
+            db.show_fridge_contents()
+        else:
+            print("\nUnknown input, try again!")
+            continue
 
 main()
