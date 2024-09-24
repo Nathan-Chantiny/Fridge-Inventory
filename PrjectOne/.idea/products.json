@@ -1,0 +1,38 @@
+{
+    "products": [
+        {
+            "Name": "Corn",
+            "Quantity": "5",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "10/24/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Ceral",
+            "Quantity": "7",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "10/24/24",
+            "Add": "092324"
+        }
+    ]
+}
