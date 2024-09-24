@@ -21,7 +21,7 @@ else:
 BUTTON_TEXTS = ["ADD", "UPDATE", "DELETE", "SEARCH"]
 
 # JSON Path
-PROD_JSON = os.path.join(CURRENT_DIR, "products.json")
+PROD_JSON = os.path.join(CURRENT_DIR, "fridge_products_full.json")
 
 # User Agreements
 EULA_TEXT = os.path.join(CURRENT_DIR, "EULA.txt")
