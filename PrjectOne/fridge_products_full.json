@@ -1,0 +1,854 @@
+{
+    "products": [
+        {
+            "Name": "Milk",
+            "Quantity": "6",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "06/20/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Eggs",
+            "Quantity": "3",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "09/03/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Cheese",
+            "Quantity": "4",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "05/26/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Butter",
+            "Quantity": "3",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "11/27/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Yogurt",
+            "Quantity": "6",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "03/10/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Lettuce",
+            "Quantity": "8",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "10/24/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Carrots",
+            "Quantity": "9",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "11/28/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Tomatoes",
+            "Quantity": "1",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "12/30/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Apples",
+            "Quantity": "8",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "02/21/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Oranges",
+            "Quantity": "4",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "05/07/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Chicken",
+            "Quantity": "3",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "03/01/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Beef",
+            "Quantity": "2",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "01/15/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Pork",
+            "Quantity": "10",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "02/08/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Tofu",
+            "Quantity": "8",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "08/13/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Almonds",
+            "Quantity": "9",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "02/09/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Peanut Butter",
+            "Quantity": "4",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "12/30/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Orange Juice",
+            "Quantity": "2",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "08/05/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Soda",
+            "Quantity": "3",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "04/02/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Water",
+            "Quantity": "9",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "01/09/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Spinach",
+            "Quantity": "6",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "03/14/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Broccoli",
+            "Quantity": "1",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "05/22/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Cucumber",
+            "Quantity": "6",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "09/29/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Bread",
+            "Quantity": "10",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "03/29/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Jam",
+            "Quantity": "5",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "12/29/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Hummus",
+            "Quantity": "2",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "07/07/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Olives",
+            "Quantity": "4",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "10/27/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Pickles",
+            "Quantity": "3",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "05/12/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Pasta",
+            "Quantity": "6",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "07/15/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Rice",
+            "Quantity": "3",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "01/09/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Mushrooms",
+            "Quantity": "8",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "03/18/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Bell Peppers",
+            "Quantity": "10",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "10/04/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Salmon",
+            "Quantity": "2",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "07/23/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Tuna",
+            "Quantity": "7",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "03/12/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Shrimp",
+            "Quantity": "5",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "09/10/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Sausage",
+            "Quantity": "2",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "07/12/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Bacon",
+            "Quantity": "5",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "06/22/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Frozen Pizza",
+            "Quantity": "6",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "10/22/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Ice Cream",
+            "Quantity": "8",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "03/09/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Butter",
+            "Quantity": "8",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "09/24/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Mayonnaise",
+            "Quantity": "3",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "10/11/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Mustard",
+            "Quantity": "4",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "07/01/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Ketchup",
+            "Quantity": "2",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "09/15/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Soy Sauce",
+            "Quantity": "6",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "07/23/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Grapes",
+            "Quantity": "4",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "10/12/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Bananas",
+            "Quantity": "6",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "12/20/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Potatoes",
+            "Quantity": "7",
+            "Group": 4,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 0,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "03/27/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Onions",
+            "Quantity": "3",
+            "Group": 1,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 1,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "11/02/24",
+            "Add": "092424"
+        },
+        {
+            "Name": "Garlic",
+            "Quantity": "10",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 1,
+                "Halal": 0,
+                "Kosher": 1
+            },
+            "Exp": "03/20/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Peas",
+            "Quantity": "5",
+            "Group": 2,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 0,
+                "Kosher": 0
+            },
+            "Exp": "02/03/25",
+            "Add": "092424"
+        },
+        {
+            "Name": "Corn",
+            "Quantity": "10",
+            "Group": 5,
+            "Info": {
+                "Vegetarian": 0,
+                "Vegan": 1,
+                "Gluten": 1,
+                "Lactose": 1,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 0
+            },
+            "Exp": "07/20/25",
+            "Add": "092424"
+        }
+    ]
+}
