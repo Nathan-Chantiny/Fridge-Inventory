@@ -1,7 +1,11 @@
 import tkinter as tk
 import tkinter.messagebox as messagebox
+from tkinter import Text, Label
+import webbrowser
 import os
 import json
+import string
+import re
 import sys
 
 # Constants
@@ -24,9 +28,11 @@ food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
 PROD_JSON = os.path.join(CURRENT_DIR, "fridge_products_full.json")
 
 
-# User Agreements
-EULA_TEXT = os.path.join(CURRENT_DIR, "EULA.txt")
-EULA_VERIFICATION = os.path.join(CURRENT_DIR, "Agreement.txt")
+# User Agreement Path
+EULA_AGREEMENT = os.path.join(CURRENT_DIR, "EULA.html")
+PRIVACY_POLICY = os.path.join(CURRENT_DIR, "Privacy_Policy.html")
+TERMS_CONDITIONS = os.path.join(CURRENT_DIR, "Terms_Conditions.html")
+VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
 
 # Main Window
 def main_window():
@@ -550,19 +556,82 @@ def search_prod(panel):
     result_text = tk.Text(bottom_frame, height=15, width=80)
     result_text.pack(pady=5)
 
-# Starting point
-if __name__ == "__main__":
+# Open the HTML file in a web browser
+def open_html(file_path):
+    webbrowser.open(f'file://{os.path.realpath(file_path)}')
+
+# Check Agreements
+def check_agreements():
+    if os.path.exists(VERIFICATION):
+        with open(VERIFICATION, "r") as file:
+            content = file.read().strip().lower()
+            if content in ["yes", "true"]:
+                return True
+
+    agreement_root = tk.Tk()
+    agreement_root.title("User Agreement")
+    agreement_root.protocol("WM_DELETE_WINDOW", sys.exit)
+
+    # Create a label with a clickable link for EULA
+    eula_label = Label(agreement_root, text="EULA (click to view)", fg="blue")
+    eula_label.pack(pady=10)
+
+    # Bind click event to open the EULA HTML file
+    eula_label.bind("<Button-1>", lambda e: open_html(EULA_AGREEMENT))
+
+    # Create a label with a clickable link for Privacy Policy
+    privacy_label = Label(agreement_root, text="Privacy Policy (click to view)", fg="blue")
+    privacy_label.pack(pady=10)
+
+    # Bind click event to open the Privacy Policy HTML file
+    privacy_label.bind("<Button-1>", lambda e: open_html(PRIVACY_POLICY))
+
+    # Create a label with a clickable link for Terms and Conditions
+    terms_label = Label(agreement_root, text="Terms and Conditions (click to view)", fg="blue")
+    terms_label.pack(pady=10)
+
+    # Bind click event to open the Terms and Conditions HTML file
+    terms_label.bind("<Button-1>", lambda e: open_html(TERMS_CONDITIONS))
+
+    # Agreement buttons
+    def on_yes():
+        with open(VERIFICATION, "w") as file:
+            file.write("yes")
+        agreement_root.destroy()
+
+    def on_no():
+        with open(VERIFICATION, "w") as file:
+            file.write("no")
+        sys.exit()
+
+    btn_yes = tk.Button(agreement_root, text="Yes, I agree", command=on_yes)
+    btn_no = tk.Button(agreement_root, text="No, I don't agree", command=on_no)
+    btn_yes.pack(side=tk.LEFT, padx=5, pady=10)
+    btn_no.pack(side=tk.RIGHT, padx=5, pady=10)
+
+    agreement_root.mainloop()
+    return os.path.exists(VERIFICATION) and open(VERIFICATION).read().strip() == "yes"
+
+# Main Function
+def main():
+    if not check_agreements():
+        return
     root = main_window()
-    
+    root.protocol("WM_DELETE_WINDOW", sys.exit)
+
     # Create a frame for buttons and panel for content
     frame = tk.Frame(root)
     frame.pack(side=tk.TOP, pady=20)
-    
+
     panel = tk.Frame(root)
     panel.pack(side=tk.TOP, pady=20)
-    
+
     # Create buttons and pass the panel for content display
     create_buttons(frame, panel)
 
     # Start the Tkinter main loop
     root.mainloop()
+
+# Starting Point
+if __name__ == "__main__":
+    main()
