@@ -1,10 +1,7 @@
 import tkinter as tk
 import tkinter.messagebox as messagebox
-from tkinter import Text, ttk
 import os
 import json
-import string
-import re
 import sys
 
 # Constants
@@ -20,8 +17,12 @@ else:
 # Button Text
 BUTTON_TEXTS = ["ADD", "UPDATE", "DELETE", "SEARCH"]
 
+# Ensure you have a list of food groups
+food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein"]
+
 # JSON Path
 PROD_JSON = os.path.join(CURRENT_DIR, "fridge_products_full.json")
+
 
 # User Agreements
 EULA_TEXT = os.path.join(CURRENT_DIR, "EULA.txt")
@@ -184,15 +185,30 @@ def add_prod(panel):
             "Add": add_date_entry.get()
         }
 
+        # Load the existing data and append new product
         with open(PROD_JSON, 'r+') as f:
-            data = json.load(f)
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {"products": []}  # Initialize if file is empty or corrupted
+
+            # Ensure that 'data' is a dictionary
+            if not isinstance(data, dict):
+                data = {"products": []}  # Reinitialize to correct structure if it's not a dict
+
+            if "products" not in data:
+                data["products"] = []  # Ensure "products" key exists
+
             data["products"].append(new_prod)
+
+            # Write back the updated data
             f.seek(0)
             json.dump(data, f, indent=4)
             f.truncate()
 
         messagebox.showinfo("Success", "Product added successfully!")
         sub_frame.destroy()  # Clear the form after submission
+
 
     submit_btn = tk.Button(sub_frame, text="Submit", command=store)
     submit_btn.grid(row=12, column=1, padx=5, pady=5)
@@ -206,28 +222,41 @@ def update_prod(panel):
     """    
     my_prod = load_prod()
 
+    # Formating for date MM/DD/YY
+    def format_date(entry_widget, event=None):
+        content = entry_widget.get()
+        clean_content = content.replace("-", "")
+
+        if len(clean_content) == 6 and clean_content.isdigit():
+            formatted_date = clean_content[:2] + "/" + clean_content[2:4] + "/" + clean_content[4:]
+            entry_widget.delete(0, tk.END)
+            entry_widget.insert(0, formatted_date)
+            entry_widget.config(bg="white")
+        elif content:
+            entry_widget.config(bg="lightcoral")
+
     def get_prod_data(name, products):
         for product in products:
             if product["Name"] == name:
                 return product
         return None  # Return None if product is not found
 
-    def find_by_name():
-        search_query = search_entry.get().lower()
-        users_listbox.delete(0, tk.END)  # Clear current list
-        for prod in my_prod:
-            if search_query in prod["Name"].lower():
-                users_listbox.insert(tk.END, str(prod["Name"]))
-
     def on_select(event):
         # Get the selected product name from the listbox
         selection = event.widget.curselection()
         if selection:
             selected_name = event.widget.get(selection[0])  # Get the selected name
-            grab_data(selected_name)  # Pass selected product name to grab_data()
+            # You could also immediately grab data here if needed
+            # grab_data(selected_name)
 
-    def grab_data(product_name):
-        product = get_prod_data(product_name, my_prod)
+    def grab_data():
+        selection = users_listbox.curselection()  # Get current selection
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a product to grab.")
+            return
+        
+        selected_name = users_listbox.get(selection[0])  # Get the selected name
+        product = get_prod_data(selected_name, my_prod)
         
         if product:
             # Populate the text fields with the product's data
@@ -258,6 +287,57 @@ def update_prod(panel):
             # Set the date added
             add_entry.delete(0, tk.END)
             add_entry.insert(0, product["Add"])
+    
+    def store():
+        # Get the current values from the input fields
+        name = prod_name_input.get()
+        quantity = qty_input.get()
+        food_group = var1.get()
+        exp_date = date_entry.get()
+        add_date = add_entry.get()
+
+        # Collect nutritional information
+        nutritional_info = {
+            "Vegetarian": veg_var.get(),
+            "Vegan": vegan_var.get(),
+            "Gluten": gluten_var.get(),
+            "Lactose": lactose_var.get(),
+            "Eggs": eggs_var.get(),
+            "Nuts": nuts_var.get(),
+            "Halal": halal_var.get(),
+            "Kosher": kosher_var.get(),
+        }
+
+        # Load existing products
+        with open(PROD_JSON, 'r+') as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {"products": []}  # Initialize if file is empty or corrupted
+
+            # Find the product to update
+            product_found = False
+            for product in data["products"]:
+                if product["Name"] == name:
+                    # Update product data
+                    product["Quantity"] = quantity
+                    product["Group"] = food_group
+                    product["Exp"] = exp_date
+                    product["Add"] = add_date
+                    product["Info"] = nutritional_info
+                    product_found = True
+                    break
+
+            if not product_found:
+                messagebox.showwarning("Update Failed", f"Product '{name}' not found.")
+                return
+
+            # Move the file cursor to the beginning and overwrite the file
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()  # Truncate the file to avoid leftover data
+
+        messagebox.showinfo("Update Successful", f"Product '{name}' updated successfully.")
 
     # Divide screen
     main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL)
@@ -267,20 +347,14 @@ def update_prod(panel):
     left_frame = tk.Frame(main_pane)
     main_pane.add(left_frame, width=200)
 
-    # Add "Find by Name" button and search entry on top
-    search_frame = tk.Frame(left_frame)
-    search_frame.pack(pady=10, padx=10)
-
-    search_entry = tk.Entry(search_frame)
-    search_entry.pack(side=tk.LEFT, padx=5)
-
-    find_button = tk.Button(search_frame, text="Find by Name", command=find_by_name)
-    find_button.pack(side=tk.LEFT)
+    # Add "Click to Grab Produce" button
+    grab_button = tk.Button(left_frame, text="Click to Grab Information", command=grab_data)
+    grab_button.pack(pady=10, padx=10)
 
     # Screen to display the products
     users_listbox = tk.Listbox(left_frame)
     users_listbox.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-    users_listbox.bind("<<ListboxSelect>>", on_select)  
+    users_listbox.bind("<<ListboxSelect>>", on_select) 
 
     # Existing Product Information
     for prod in my_prod:
@@ -341,20 +415,21 @@ def update_prod(panel):
     exp_date_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.E)
     date_entry = tk.Entry(sub_frame)
     date_entry.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
-    date_entry.bind("<FocusOut>", format_date)
+    date_entry.bind("<FocusOut>", lambda e: format_date(date_entry))  # Bind date formatting
 
     # DATE ADDED
-    add_date_label = tk.Label(sub_frame, text="Date Added (MM/DD/YY):")
+    add_date_label = tk.Label(sub_frame, text="Add Date (MM/DD/YY):")
     add_date_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.E)
     add_entry = tk.Entry(sub_frame)
     add_entry.grid(row=11, column=1, padx=5, pady=5, sticky=tk.W)
-    add_entry.bind("<FocusOut>", format_date)
+    add_entry.bind("<FocusOut>", lambda e: format_date(add_entry))  # Bind date formatting
 
     # Update button
     update_btn = tk.Button(sub_frame, text="Update", command=store)
     update_btn.grid(row=12, column=1, padx=5, pady=5)
 
     return
+
 
 # Delete Existing Product
 def delete_prod(panel):
@@ -474,10 +549,6 @@ def search_prod(panel):
 
     result_text = tk.Text(bottom_frame, height=15, width=80)
     result_text.pack(pady=5)
-
-# Ensure you have a list of food groups
-food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein"]
-
 
 # Starting point
 if __name__ == "__main__":
