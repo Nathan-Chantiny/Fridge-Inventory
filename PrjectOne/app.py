@@ -18,7 +18,7 @@ else:
 BUTTON_TEXTS = ["ADD", "UPDATE", "DELETE", "SEARCH"]
 
 # Ensure you have a list of food groups
-food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein"]
+food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
 
 # JSON Path
 PROD_JSON = os.path.join(CURRENT_DIR, "fridge_products_full.json")
@@ -132,7 +132,7 @@ def add_prod(panel):
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
     var1 = tk.IntVar()
-    food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein"]
+    food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
         radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
         radio.grid(row=3 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
@@ -384,7 +384,7 @@ def update_prod(panel):
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
     var1 = tk.IntVar()
-    food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein"]
+    food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
         radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
         radio.grid(row=3 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
