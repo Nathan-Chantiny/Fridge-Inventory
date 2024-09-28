@@ -1,9 +1,1 @@
-
-   ___     _     _               _____                      _                   
-  / __\ __(_) __| | __ _  ___    \_   \_ ____   _____ _ __ | |_ ___  _ __ _   _ 
- / _\| '__| |/ _` |/ _` |/ _ \    / /\/ '_ \ \ / / _ \ '_ \| __/ _ \| '__| | | |
-/ /  | |  | | (_| | (_| |  __/ /\/ /_ | | | \ V /  __/ | | | || (_) | |  | |_| |
-\/   |_|  |_|\__,_|\__, |\___| \____/ |_| |_|\_/ \___|_| |_|\__\___/|_|   \__, |
-                   |___/                                                  |___/ 
-
-This resository contains all the project files for CSC 4110 Group 6 Project 1
+This repository contains all the project files for CSC 4110 Group 6 Project 1
