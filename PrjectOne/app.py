@@ -86,6 +86,15 @@ def create_panel(index, panel):
     else:               # Search for product
         search_prod(panel)
 
+# Check for Special Characters
+def check_special_chars(entry):
+    content = entry.get()
+    # Check if there are any special characters in the content using regex
+    if re.search(r'[^a-zA-Z0-9 ]', content):  # Matches anything not alphanumeric or space
+        entry.config(bg="lightcoral")
+    else:
+        entry.config(bg="white")
+        
 # Add New Product
 def add_prod(panel):
     """
@@ -126,6 +135,7 @@ def add_prod(panel):
     prod_name_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
     prod_name_input = tk.Entry(sub_frame)
     prod_name_input.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+    prod_name_input.bind("<FocusOut>", lambda event, entry=prod_name_input: check_special_chars(entry))
 
     # QUANTITY INPUT
     qty_label = tk.Label(sub_frame, text="Quantity:")
@@ -378,6 +388,7 @@ def update_prod(panel):
     prod_name_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
     prod_name_input = tk.Entry(sub_frame)
     prod_name_input.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+    prod_name_input.bind("<FocusOut>", lambda event, entry=prod_name_input: check_special_chars(entry))
 
     # QUANTITY INPUT
     qty_label = tk.Label(sub_frame, text="Quantity:")
