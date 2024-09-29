@@ -1,3 +1,26 @@
+"""
+This script creates a Tkinter-based GUI application for managing food-related data inputs.
+
+The application allows the user to input various attributes of food items, such as:
+- Product name
+- Quantity
+- Food group (via radio buttons)
+- Nutritional information (via checkboxes for dietary options like Vegan, Vegetarian, etc.)
+- Expiration date
+- Date added
+
+Additionally, the application displays agreement dialogs for End User License Agreement (EULA), Privacy Policy, and Terms and Conditions before proceeding to the main window.
+
+Key Functions:
+- `main_window()`: Initializes and configures the main application window.
+- `create_buttons()`: Sets up buttons for navigating or executing certain features within the app.
+- `check_agreements()`: Ensures the user agrees to the legal terms before using the application.
+- `main()`: The entry point for starting the application, calling the main Tkinter event loop.
+
+Usage:
+    Run the script to launch the GUI, and follow the prompts to input food-related data.
+"""
+
 import tkinter as tk
 import tkinter.messagebox as messagebox
 from tkinter import Text, Label
@@ -36,6 +59,15 @@ VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
 
 # Main Window
 def main_window():
+    """
+    Initializes and configures the main window for the Tkinter application.
+
+    This function creates the root window with a title "Group 6 - Project 1" and 
+    sets the dimensions of the window to 600x800 pixels.
+
+    Returns:
+        Tk: The root Tkinter window object that serves as the main application window.
+    """
     root = tk.Tk()
     root.title("Group 6 - Project 1")
     root.geometry('600x800')
@@ -43,6 +75,16 @@ def main_window():
 
 # Load Products
 def load_prod():
+    """
+    Loads the list of products from a JSON file.
+
+    This function checks if the specified product JSON file exists. If the file does not exist, 
+    it creates the file with a default structure, including an empty "products" list. It then 
+    reads the contents of the file and returns the list of products.
+
+    Returns:
+        list: A list of products loaded from the JSON file.
+    """
     # Check if the file exists
     if not os.path.exists(PROD_JSON):
         # Create the file with a default structure if it doesn't exist
@@ -53,6 +95,23 @@ def load_prod():
     return data["products"]  # Return the list of products
 
 def on_button_click(clicked_index, buttons, panel):
+    """
+    Handles the event when a button is clicked in the GUI.
+
+    This function iterates over a list of buttons and adjusts the size of the clicked button. 
+    It ensures that the button corresponding to the `clicked_index` is highlighted (or resized) 
+    while maintaining a consistent size for all other buttons. Once the button is clicked, it 
+    calls the `create_panel` function to update the content of the specified panel based on 
+    the index of the clicked button.
+
+    Args:
+        clicked_index (int): The index of the button that was clicked.
+        buttons (list): A list of Tkinter button objects.
+        panel (Tkinter Frame): The frame or panel where the content is displayed after a button click.
+
+    Returns:
+        None
+    """
     # Iterating over all buttons, find the one that is clicked, adjust size
     for index, button in enumerate(buttons):
         if index == clicked_index:
@@ -64,6 +123,21 @@ def on_button_click(clicked_index, buttons, panel):
 
 # Create the Buttons
 def create_buttons(frame, panel):
+    """
+    Creates a set of buttons within a specified frame and assigns click functionality.
+
+    This function generates a series of buttons based on predefined text labels (from `BUTTON_TEXTS`), 
+    places them in the specified frame, and binds each button to trigger the `on_button_click` 
+    function when clicked. The buttons are arranged in a single row within the frame. By default, 
+    the first button is given a preset size.
+
+    Args:
+        frame (Tkinter Frame): The frame where the buttons will be placed.
+        panel (Tkinter Frame): The panel that will be updated based on button clicks.
+
+    Returns:
+        list: A list of Tkinter button objects created within the frame.
+    """
     buttons = []
     for i, text in enumerate(BUTTON_TEXTS):
         btn = tk.Button(frame, text=text, height=HEIGHT, width=WIDTH,
@@ -75,6 +149,24 @@ def create_buttons(frame, panel):
 
 # Button Panel
 def create_panel(index, panel):
+    """
+    Updates the content of the given panel based on the selected button index.
+
+    This function clears the existing content of the panel by destroying all its widgets. 
+    It then dynamically updates the panel's content based on the `index` of the selected button. 
+    Depending on the index, it calls one of the following functions:
+    - `add_prod(panel)`: Adds a new product (index 0).
+    - `update_prod(panel)`: Updates an existing product (index 1).
+    - `delete_prod(panel)`: Deletes an existing product (index 2).
+    - `search_prod(panel)`: Searches for a product (for any other index).
+
+    Args:
+        index (int): The index of the clicked button, determining the panel content.
+        panel (Tkinter Frame): The panel where the dynamic content is displayed.
+
+    Returns:
+        None
+    """
     for widget in panel.winfo_children():
         widget.destroy()
     if index == 0:      # Add new product
@@ -88,6 +180,21 @@ def create_panel(index, panel):
 
 # Check for Special Characters
 def check_special_chars(entry):
+    """
+    Validates the content of a Tkinter entry widget for special characters.
+
+    This function retrieves the current content of the provided `entry` widget and uses a 
+    regular expression to check for the presence of special characters (anything that is 
+    not alphanumeric or a space). If any special characters are found, the background color 
+    of the entry widget is changed to light coral to indicate invalid input. If no special 
+    characters are found, the background is reset to white.
+
+    Args:
+        entry (Tkinter Entry): The entry widget whose content is being validated.
+
+    Returns:
+        None
+    """
     content = entry.get()
     # Check if there are any special characters in the content using regex
     if re.search(r'[^a-zA-Z0-9 ]', content):  # Matches anything not alphanumeric or space
@@ -98,15 +205,27 @@ def check_special_chars(entry):
 # Add New Product
 def add_prod(panel):
     """
-    Set up:
-    Name [ Input ] ✓
-    QTY [ Input ] ✓
-    Type [ Radio Button ] ✓
-    Nutrition [ Check Button ] ✓
-    Exp Date [ MM/DD/YY ] ✓
-    Date Added [ MM/DD/YY ] ✓
-    """
+    Creates a form in the provided panel to add a new product with various details.
 
+    This function generates a set of input fields in a `sub_frame` within the `panel` 
+    for adding a new product. The form includes:
+    - Product Name (text entry with validation for special characters)
+    - Quantity (positive integer validation)
+    - Food Group (radio buttons for selection)
+    - Nutritional Information (checkboxes for various dietary restrictions)
+    - Expiration Date (formatted as MM/DD/YY)
+    - Date Added (formatted as MM/DD/YY)
+
+    Upon submission, the product details are validated and stored in a JSON file (`PROD_JSON`).
+    If the quantity is invalid, an error message is shown. After successfully adding the product, 
+    a success message is displayed and the form is cleared.
+
+    Args:
+        panel (Tkinter Frame): The frame where the form will be displayed.
+
+    Returns:
+        None
+    """
     # Formating for date MM/DD/YY
     def format_date(entry_widget, event=None):
         content = entry_widget.get()
@@ -234,8 +353,27 @@ def add_prod(panel):
 # Update Existing Product 
 def update_prod(panel):
     """
-    Set up: [Left - Product Info]✓ [Right - Same as ADD info]✓
-    """    
+    Provides a GUI form to update an existing product's details.
+
+    This function creates a split-screen interface in the provided `panel`. On the left side, it 
+    displays a list of existing products loaded from a JSON file. The user can select a product from 
+    the list and the form on the right side will be populated with the product's details, including:
+    - Product Name
+    - Quantity
+    - Food Group (via radio buttons)
+    - Nutritional Information (via checkboxes)
+    - Expiration Date (formatted as MM/DD/YY)
+    - Date Added (formatted as MM/DD/YY)
+
+    The user can edit the product's details and submit the updates. The changes are saved back 
+    to the JSON file. If the product is not found, an error message is shown.
+
+    Args:
+        panel (Tkinter Frame): The frame where the form and product list will be displayed.
+
+    Returns:
+        None
+    """
     my_prod = load_prod()
 
     # Formating for date MM/DD/YY
@@ -447,12 +585,28 @@ def update_prod(panel):
 
     return
 
-
 # Delete Existing Product
 def delete_prod(panel):
     """
-    Set up: [Top - Search]✓ [Bottom - Show Information]✓
-    """  
+    Creates a GUI interface in the provided panel to search for and delete products.
+
+    This function provides a form that allows users to search for products by name and delete them 
+    from the system. The product list is displayed in a listbox, and the user can search for a 
+    specific product by entering the name in the search bar. When a product is selected, the user 
+    can delete it after confirming the action. The product is removed from the JSON file that stores 
+    product data.
+
+    Key Features:
+    - A search bar to filter products by name.
+    - A listbox to display matching products.
+    - A delete button to remove the selected product, with confirmation dialogs for safety.
+
+    Args:
+        panel (Tkinter Frame): The frame where the form and product list will be displayed.
+
+    Returns:
+        None
+    """
     global my_prod  # Declare my_prod as global
 
     my_prod = load_prod()  # Load product data from the JSON file
@@ -516,8 +670,24 @@ def delete_prod(panel):
 # Search for Product
 def search_prod(panel):
     """
-    Set up: [Top - Search]✓ [Bottom - Show Information]✓
-    """  
+    Creates a GUI interface in the provided panel to search for and display product information.
+
+    This function allows users to search for products by name and displays the results in a 
+    formatted text area. Users can input part or the full name of a product, and the matching 
+    products are displayed with details such as product name, quantity, food group, and any relevant 
+    nutritional information (e.g., vegetarian, vegan, etc.).
+
+    Key Features:
+    - Search by product name.
+    - Display of product details including quantity, food group, and nutritional information.
+    - Results are shown in a text widget in the panel.
+
+    Args:
+        panel (Tkinter Frame): The frame where the search form and results will be displayed.
+
+    Returns:
+        None
+    """
     my_prod = load_prod()  # Load product data
 
     # Function to display search results
@@ -569,10 +739,41 @@ def search_prod(panel):
 
 # Open the HTML file in a web browser
 def open_html(file_path):
+    """
+    Opens an HTML file in the default web browser.
+
+    This function takes a file path to an HTML file, converts it to an absolute path, 
+    and opens it in the user's default web browser.
+
+    Args:
+        file_path (str): The relative or absolute path to the HTML file to be opened.
+
+    Returns:
+        None
+    """
     webbrowser.open(f'file://{os.path.realpath(file_path)}')
 
 # Check Agreements
 def check_agreements():
+    """
+    Displays a user agreement dialog and checks if the user has accepted the terms.
+
+    This function first checks if a verification file exists (`VERIFICATION`). If the file exists 
+    and contains a valid response (e.g., "yes" or "true"), the function returns `True`, indicating 
+    that the user has already agreed to the terms.
+
+    If no valid verification exists, the function creates a Tkinter window displaying clickable 
+    links for the End User License Agreement (EULA), Privacy Policy, and Terms and Conditions. 
+    The user must either agree by clicking "Yes, I agree" or decline by clicking "No, I don't agree". 
+    If the user agrees, the response is written to the `VERIFICATION` file, and the function returns `True`. 
+    If the user declines, the application exits.
+
+    Args:
+        None
+
+    Returns:
+        bool: `True` if the user agrees to the terms, `False` otherwise.
+    """
     if os.path.exists(VERIFICATION):
         with open(VERIFICATION, "r") as file:
             content = file.read().strip().lower()
@@ -625,6 +826,27 @@ def check_agreements():
 
 # Main Function
 def main():
+    """
+    The main entry point of the application.
+
+    This function first checks if the user has agreed to the terms using `check_agreements()`. 
+    If the user has not agreed, the application will terminate. If the user agrees, the function 
+    initializes the main Tkinter window using `main_window()`, and sets up the application's 
+    interface.
+
+    The interface consists of:
+    - A frame that holds buttons for navigating different sections of the application.
+    - A panel that updates its content based on the selected button.
+
+    The function also sets up the window close behavior and starts the Tkinter main event loop 
+    to keep the application running.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     if not check_agreements():
         return
     root = main_window()
