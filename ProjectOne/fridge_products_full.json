@@ -1,24 +1,7 @@
 {
     "products": [
         {
-            "Name": "Milk",
-            "Quantity": "6",
-            "Group": 1,
-            "Info": {
-                "Vegetarian": 0,
-                "Vegan": 0,
-                "Gluten": 0,
-                "Lactose": 1,
-                "Eggs": 0,
-                "Nuts": 0,
-                "Halal": 0,
-                "Kosher": 0
-            },
-            "Exp": "10/04/24",
-            "Add": "09/24/24",
-            "User": "Dawlat"
-        },
-        {
+            "UniqueID": "Eggs10/22/24",
             "Name": "Eggs",
             "Quantity": "3",
             "Group": 5,
@@ -37,6 +20,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Cheese10/01/24",
             "Name": "Cheese",
             "Quantity": "4",
             "Group": 1,
@@ -55,6 +39,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Butter02/24/25",
             "Name": "Butter",
             "Quantity": "3",
             "Group": 1,
@@ -73,6 +58,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Yogurt10/01/24",
             "Name": "Yogurt",
             "Quantity": "6",
             "Group": 1,
@@ -91,6 +77,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Lettuce10/04/24",
             "Name": "Lettuce",
             "Quantity": "8",
             "Group": 3,
@@ -109,6 +96,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Carrots10/15/24",
             "Name": "Carrots",
             "Quantity": "9",
             "Group": 3,
@@ -127,6 +115,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Tomatoes09/29/24",
             "Name": "Tomatoes",
             "Quantity": "1",
             "Group": 3,
@@ -145,6 +134,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Apples10/01/24",
             "Name": "Apples",
             "Quantity": "8",
             "Group": 2,
@@ -163,6 +153,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Oranges10/01/24",
             "Name": "Oranges",
             "Quantity": "4",
             "Group": 2,
@@ -181,6 +172,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Chicken09/26/24",
             "Name": "Chicken",
             "Quantity": "3",
             "Group": 5,
@@ -199,6 +191,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Beef09/27/24",
             "Name": "Beef",
             "Quantity": "2",
             "Group": 5,
@@ -217,6 +210,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Pork09/26/24",
             "Name": "Pork",
             "Quantity": "10",
             "Group": 5,
@@ -235,6 +229,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Tofu10/01/24",
             "Name": "Tofu",
             "Quantity": "8",
             "Group": 5,
@@ -253,6 +248,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Almonds09/24/26",
             "Name": "Almonds",
             "Quantity": "9",
             "Group": 4,
@@ -271,6 +267,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "PeanutButter03/24/25",
             "Name": "Peanut Butter",
             "Quantity": "4",
             "Group": 5,
@@ -289,6 +286,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "OrangeJuice10/02/24",
             "Name": "Orange Juice",
             "Quantity": "2",
             "Group": 6,
@@ -307,6 +305,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Soda06/24/25",
             "Name": "Soda",
             "Quantity": "3",
             "Group": 6,
@@ -325,24 +324,7 @@
             "User": "Dawlat"
         },
         {
-            "Name": "Water",
-            "Quantity": "9",
-            "Group": 6,
-            "Info": {
-                "Vegetarian": 1,
-                "Vegan": 1,
-                "Gluten": 0,
-                "Lactose": 0,
-                "Eggs": 0,
-                "Nuts": 0,
-                "Halal": 0,
-                "Kosher": 0
-            },
-            "Exp": "12/24/26",
-            "Add": "09/24/24",
-            "User": "Riley"
-        },
-        {
+            "UniqueID": "Spinach10/01/24",
             "Name": "Spinach",
             "Quantity": "6",
             "Group": 3,
@@ -361,6 +343,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Broccoli09/29/24",
             "Name": "Broccoli",
             "Quantity": "1",
             "Group": 3,
@@ -379,6 +362,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Cucumber10/08/24",
             "Name": "Cucumber",
             "Quantity": "6",
             "Group": 3,
@@ -397,6 +381,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Bread09/26/24",
             "Name": "Bread",
             "Quantity": "10",
             "Group": 4,
@@ -415,6 +400,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Jam04/24/25",
             "Name": "Jam",
             "Quantity": "5",
             "Group": 2,
@@ -433,6 +419,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Hummus11/24/24",
             "Name": "Hummus",
             "Quantity": "2",
             "Group": 4,
@@ -451,6 +438,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Olives09/24/26",
             "Name": "Olives",
             "Quantity": "4",
             "Group": 3,
@@ -469,6 +457,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Pickles12/07/24",
             "Name": "Pickles",
             "Quantity": "3",
             "Group": 3,
@@ -487,6 +476,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Pasta09/24/26",
             "Name": "Pasta",
             "Quantity": "6",
             "Group": 4,
@@ -505,6 +495,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Rice09/24/26",
             "Name": "Rice",
             "Quantity": "3",
             "Group": 4,
@@ -523,6 +514,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Mushrooms10/04/24",
             "Name": "Mushrooms",
             "Quantity": "8",
             "Group": 3,
@@ -541,6 +533,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "BellPeppers09/24/26",
             "Name": "Bell Peppers",
             "Quantity": "10",
             "Group": 3,
@@ -559,6 +552,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Salmon09/28/24",
             "Name": "Salmon",
             "Quantity": "2",
             "Group": 5,
@@ -577,6 +571,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Tuna09/24/29",
             "Name": "Tuna",
             "Quantity": "7",
             "Group": 5,
@@ -595,6 +590,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Shrimp12/24/24",
             "Name": "Shrimp",
             "Quantity": "5",
             "Group": 5,
@@ -613,6 +609,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Sausage09/28/24",
             "Name": "Sausage",
             "Quantity": "2",
             "Group": 5,
@@ -631,6 +628,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Bacon10/01/24",
             "Name": "Bacon",
             "Quantity": "5",
             "Group": 5,
@@ -649,6 +647,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "FrozenPizza03/24/26",
             "Name": "Frozen Pizza",
             "Quantity": "6",
             "Group": 6,
@@ -667,6 +666,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "IceCream11/05/24",
             "Name": "Ice Cream",
             "Quantity": "8",
             "Group": 1,
@@ -685,6 +685,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "NutButter11/24/24",
             "Name": "Nut Butter",
             "Quantity": "8",
             "Group": 5,
@@ -703,6 +704,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Mayonnaise10/24/24",
             "Name": "Mayonnaise",
             "Quantity": "3",
             "Group": 1,
@@ -721,6 +723,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Mustard09/24/25",
             "Name": "Mustard",
             "Quantity": "4",
             "Group": 6,
@@ -739,6 +742,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Ketchup03/24/25",
             "Name": "Ketchup",
             "Quantity": "2",
             "Group": 6,
@@ -757,6 +761,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "SoySauce03/24/25",
             "Name": "Soy Sauce",
             "Quantity": "6",
             "Group": 6,
@@ -775,6 +780,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Grapes10/08/24",
             "Name": "Grapes",
             "Quantity": "4",
             "Group": 2,
@@ -793,6 +799,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Bananas09/29/24",
             "Name": "Bananas",
             "Quantity": "6",
             "Group": 2,
@@ -811,6 +818,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Potatoes11/24/24",
             "Name": "Potatoes",
             "Quantity": "7",
             "Group": 3,
@@ -829,6 +837,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Onions12/24/24",
             "Name": "Onions",
             "Quantity": "3",
             "Group": 3,
@@ -847,6 +856,7 @@
             "User": "Nathan"
         },
         {
+            "UniqueID": "Garlic03/24/25",
             "Name": "Garlic",
             "Quantity": "10",
             "Group": 3,
@@ -865,6 +875,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "Peas09/27/24",
             "Name": "Peas",
             "Quantity": "5",
             "Group": 3,
@@ -883,6 +894,7 @@
             "User": "Dawlat"
         },
         {
+            "UniqueID": "Corn09/27/24",
             "Name": "Corn",
             "Quantity": "10",
             "Group": 3,
@@ -901,6 +913,7 @@
             "User": "Riley"
         },
         {
+            "UniqueID": "SnapPeas10/02/24",
             "Name": "Snap Peas",
             "Quantity": "7",
             "Group": 3,
