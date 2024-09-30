@@ -92,6 +92,7 @@ def load_prod():
         data = json.load(f)
     return data["products"]  # Return the list of products
 
+# Button Clicked
 def on_button_click(clicked_index, buttons, panel):
     """
     Handles the event when a button is clicked in the GUI.
@@ -461,6 +462,7 @@ def update_prod(panel):
             # Populate the text field with the product's name
             prod_name_input.delete(0, tk.END)
             prod_name_input.insert(0, product["Name"])
+            prod_name_input.config(state='readonly')
 
             # Populate the text field with the product's qty
             qty_input.delete(0, tk.END)
@@ -483,6 +485,7 @@ def update_prod(panel):
             # Set expiration date
             date_entry.delete(0, tk.END)
             date_entry.insert(0, product["Exp"])
+            date_entry.config(state='readonly')
 
             # Set the date added
             add_entry.delete(0, tk.END)
@@ -528,7 +531,7 @@ def update_prod(panel):
                     # Update product data
                     product["Quantity"] = quantity
                     product["Group"] = food_group
-                    product["Exp"] = exp_date
+                    # product["Exp"] = exp_date
                     product["Add"] = add_date
                     product["Info"] = nutritional_info
                     product["User"] = user
@@ -765,7 +768,7 @@ def search_prod(panel):
                         nutritional_info.append(key)
                 
                 nutritional_info_str = ", ".join(nutritional_info) if nutritional_info else "None"
-                result_text.insert(tk.END, f"{prod['Name']} - {prod['Quantity']} QTY - {group_name} - {nutritional_info_str}\n Expiration date: {prod['Exp']} - Added Date: {prod['Add']} - {prod['User']}\n")
+                result_text.insert(tk.END, f"ID: {prod['UniqueID']}\n {prod['Name']} - {prod['Quantity']} QTY - {group_name} - {nutritional_info_str}\n Expiration date: {prod['Exp']} - Added Date: {prod['Add']} - {prod['User']}\n")
         else:
             result_text.insert(tk.END, "No products found.\n")
 
