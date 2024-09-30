@@ -220,7 +220,7 @@ def format_date(entry_widget, event=None):
         None
     """
     content = entry_widget.get()
-    clean_content = content.replace("-", "")
+    clean_content = content.replace("-", "").replace("/", "")
 
     if len(clean_content) == 6 and clean_content.isdigit():
         formatted_date = clean_content[:2] + "/" + clean_content[2:4] + "/" + clean_content[4:]
