@@ -23,11 +23,10 @@ Usage:
 
 import tkinter as tk
 import tkinter.messagebox as messagebox
-from tkinter import Text, Label
+from tkinter import Label
 import webbrowser
 import os
 import json
-import string
 import re
 import sys
 
@@ -49,7 +48,6 @@ food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
 
 # JSON Path
 PROD_JSON = os.path.join(CURRENT_DIR, "fridge_products_full.json")
-
 
 # User Agreement Path
 EULA_AGREEMENT = os.path.join(CURRENT_DIR, "EULA.html")
@@ -144,7 +142,7 @@ def create_buttons(frame, panel):
                         command=lambda i=i: on_button_click(i, buttons, panel))
         btn.grid(row=1, column=i, sticky="s")
         buttons.append(btn)
-    buttons[0].config(height=HEIGHT, width=WIDTH)  # default button
+    buttons[0].config(height=HEIGHT, width=WIDTH)  # Default Button
     return buttons
 
 # Button Panel
@@ -201,6 +199,51 @@ def check_special_chars(entry):
         entry.config(bg="lightcoral")
     else:
         entry.config(bg="white")
+
+# Formating for date MM/DD/YY
+def format_date(entry_widget, event=None):
+    """
+    Formats the content of a Tkinter entry widget for date.
+
+    This function retrieves the current content of the provided `entry` widget and uses a 
+    regular expression to check for the presence of non digit characters and incorrect formatting 
+    of the date. If any special characters, letters or incorrect format are found, the background 
+    color of the entry widget is changed to light coral to indicate invalid input. If no special 
+    characters are found, the background is reset to white. Once the `entry` has been made the 
+    formatting will be updated to match: MM/DD/YY
+
+    Args:
+        entry (Tkinter Entry): The entry widget whose content is being validated and formatted.
+
+    Returns:
+        None
+    """
+    content = entry_widget.get()
+    clean_content = content.replace("-", "")
+
+    if len(clean_content) == 6 and clean_content.isdigit():
+        formatted_date = clean_content[:2] + "/" + clean_content[2:4] + "/" + clean_content[4:]
+        entry_widget.delete(0, tk.END)
+        entry_widget.insert(0, formatted_date)
+        entry_widget.config(bg="white")
+    elif content:
+        entry_widget.config(bg="lightcoral")
+
+# Check Quantity is larger than 0 and an integer
+def validate_qty(qty):
+    """
+    Validates a quantity value.
+
+    This function checks whether the provided `qty` is a string representing a digit and 
+    ensures it is greater than 0.
+
+    Args:
+        entry (Tkinter Entry): The quantity value to be validated.
+
+    Returns:
+        bool: True if the quantity is a positive integer, False otherwise.
+    """
+    return qty.isdigit() and int(qty) > 0
         
 # Add New Product
 def add_prod(panel):
@@ -215,6 +258,7 @@ def add_prod(panel):
     - Nutritional Information (checkboxes for various dietary restrictions)
     - Expiration Date (formatted as MM/DD/YY)
     - Date Added (formatted as MM/DD/YY)
+    - User Name (text entry with validation for special characters)
 
     Upon submission, the product details are validated and stored in a JSON file (`PROD_JSON`).
     If the quantity is invalid, an error message is shown. After successfully adding the product, 
@@ -226,43 +270,27 @@ def add_prod(panel):
     Returns:
         None
     """
-    # Formating for date MM/DD/YY
-    def format_date(entry_widget, event=None):
-        content = entry_widget.get()
-        clean_content = content.replace("-", "")
-
-        if len(clean_content) == 6 and clean_content.isdigit():
-            formatted_date = clean_content[:2] + "/" + clean_content[2:4] + "/" + clean_content[4:]
-            entry_widget.delete(0, tk.END)
-            entry_widget.insert(0, formatted_date)
-            entry_widget.config(bg="white")
-        elif content:
-            entry_widget.config(bg="lightcoral")
-
-    # Check Quantity is larger than 0 and an integer
-    def validate_qty(qty):
-        return qty.isdigit() and int(qty) > 0
-
+    # Set up for the Add Panel
     sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
     sub_frame.pack(pady=20)
 
     instructions = tk.Label(sub_frame, text="Fill in the information for the NEW product.")
     instructions.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
-    # PRODUCT NAME INPUT
+    # Product Name Input
     prod_name_label = tk.Label(sub_frame, text="Product Name:")
     prod_name_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
     prod_name_input = tk.Entry(sub_frame)
     prod_name_input.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
     prod_name_input.bind("<FocusOut>", lambda event, entry=prod_name_input: check_special_chars(entry))
 
-    # QUANTITY INPUT
+    # Quantity Input
     qty_label = tk.Label(sub_frame, text="Quantity:")
     qty_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
     qty_input = tk.Entry(sub_frame)
     qty_input.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
-    # FOOD GROUP (Radio buttons)
+    # Food Group (Radio buttons)
     group_label = tk.Label(sub_frame, text="Food Group:")
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
@@ -272,7 +300,7 @@ def add_prod(panel):
         radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
         radio.grid(row=3 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
-    # NUTRITIONAL INFORMATION (Check buttons)
+    # Nutritional Information (Check buttons)
     info_label = tk.Label(sub_frame, text="Nutritional Information:")
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
@@ -291,22 +319,44 @@ def add_prod(panel):
         check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0)
         check.grid(row=6 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
-    # EXPIRATION DATE
+    # Experation Date
     exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):")
     exp_date_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.E)
     exp_date_entry = tk.Entry(sub_frame)
     exp_date_entry.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
     exp_date_entry.bind("<FocusOut>", lambda event: format_date(exp_date_entry))
 
-    # DATE ADDED
+    # Date Added
     add_date_label = tk.Label(sub_frame, text="Date Added (MM/DD/YY):")
     add_date_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.E)
     add_date_entry = tk.Entry(sub_frame)
     add_date_entry.grid(row=11, column=1, padx=5, pady=5, sticky=tk.W)
     add_date_entry.bind("<FocusOut>", lambda event: format_date(add_date_entry))
 
+    # User Name Input
+    user_name_label = tk.Label(sub_frame, text="User Name:")
+    user_name_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.E)
+    user_name_input = tk.Entry(sub_frame)
+    user_name_input.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
+    user_name_input.bind("<FocusOut>", lambda event, entry=user_name_input: check_special_chars(entry))
+
     # Collect and Store Data
     def store():
+        """
+        Saves a new product entry to the JSON file.
+
+        This function collects the input data from the form (e.g., product name, quantity, 
+        expiration date, etc.), validates the quantity, and stores the product details in a 
+        JSON file (`PROD_JSON`). If the file does not exist or is corrupted, it initializes a 
+        new one. It also ensures the data structure is correct before appending new entries.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        # Validates the quantity input
         if not validate_qty(qty_input.get()):
             messagebox.showerror("Input Error", "Quantity must be a positive number.")
             return
@@ -314,14 +364,16 @@ def add_prod(panel):
         # Create the unique identifier by concatenating Name and Exp
         unique_id = prod_name_input.get() + exp_date_entry.get()
 
+        # The information that will be stored
         new_prod = {
             "UniqueID": unique_id,
             "Name": prod_name_input.get(),
             "Quantity": qty_input.get(),
-            "Group": var1.get(),  # The selected radio button value
+            "Group": var1.get(),  
             "Info": {key: var.get() for key, var in nutrition_vars.items()},
             "Exp": exp_date_entry.get(),
-            "Add": add_date_entry.get()
+            "Add": add_date_entry.get(),
+            "User": user_name_input.get()
         }
 
         # Load the existing data and append new product
@@ -333,7 +385,7 @@ def add_prod(panel):
 
             # Ensure that 'data' is a dictionary
             if not isinstance(data, dict):
-                data = {"products": []}  # Reinitialize to correct structure if it's not a dict
+                data = {"products": []}  # Reinitialize to correct structure if it's not a dictionary
 
             if "products" not in data:
                 data["products"] = []  # Ensure "products" key exists
@@ -345,12 +397,13 @@ def add_prod(panel):
             json.dump(data, f, indent=4)
             f.truncate()
 
+        # Message apears if information is added
         messagebox.showinfo("Success", "Product added successfully!")
         sub_frame.destroy()  # Clear the form after submission
 
-
+    # Submit Button
     submit_btn = tk.Button(sub_frame, text="Submit", command=store)
-    submit_btn.grid(row=12, column=1, padx=5, pady=5)
+    submit_btn.grid(row=13, column=1, padx=5, pady=5)
 
     return
 
@@ -380,33 +433,21 @@ def update_prod(panel):
     """
     my_prod = load_prod()
 
-    # Formating for date MM/DD/YY
-    def format_date(entry_widget, event=None):
-        content = entry_widget.get()
-        clean_content = content.replace("-", "")
-
-        if len(clean_content) == 6 and clean_content.isdigit():
-            formatted_date = clean_content[:2] + "/" + clean_content[2:4] + "/" + clean_content[4:]
-            entry_widget.delete(0, tk.END)
-            entry_widget.insert(0, formatted_date)
-            entry_widget.config(bg="white")
-        elif content:
-            entry_widget.config(bg="lightcoral")
-
+    # Looks for the product
     def get_prod_data(name, products):
         for product in products:
             if product["Name"] == name:
                 return product
         return None  # Return None if product is not found
 
+
+    # Get the selected product name from the listbox
     def on_select(event):
-        # Get the selected product name from the listbox
         selection = event.widget.curselection()
         if selection:
             selected_name = event.widget.get(selection[0])  # Get the selected name
-            # You could also immediately grab data here if needed
-            # grab_data(selected_name)
 
+    # Prints the selected product's information 
     def grab_data():
         selection = users_listbox.curselection()  # Get current selection
         if not selection:
@@ -417,10 +458,11 @@ def update_prod(panel):
         product = get_prod_data(selected_name, my_prod)
         
         if product:
-            # Populate the text fields with the product's data
+            # Populate the text field with the product's name
             prod_name_input.delete(0, tk.END)
             prod_name_input.insert(0, product["Name"])
 
+            # Populate the text field with the product's qty
             qty_input.delete(0, tk.END)
             qty_input.insert(0, product["Quantity"])
 
@@ -445,7 +487,12 @@ def update_prod(panel):
             # Set the date added
             add_entry.delete(0, tk.END)
             add_entry.insert(0, product["Add"])
-    
+
+            # Populate the text field with the product's user
+            user_name_input.delete(0, tk.END)
+            user_name_input.insert(0, product["User"])
+
+    # Stores the updated product into the JSON file with its updates    
     def store():
         # Get the current values from the input fields
         name = prod_name_input.get()
@@ -453,6 +500,7 @@ def update_prod(panel):
         food_group = var1.get()
         exp_date = date_entry.get()
         add_date = add_entry.get()
+        user = user_name_input.get()
 
         # Collect nutritional information
         nutritional_info = {
@@ -483,19 +531,22 @@ def update_prod(panel):
                     product["Exp"] = exp_date
                     product["Add"] = add_date
                     product["Info"] = nutritional_info
+                    product["User"] = user
                     product_found = True
                     break
 
             if not product_found:
-                messagebox.showwarning("Update Failed", f"Product '{name}' not found.")
+                # Message apears if information is not updated
+                messagebox.showwarning("Fail", f"Product '{name}' not found.")
                 return
 
             # Move the file cursor to the beginning and overwrite the file
             f.seek(0)
             json.dump(data, f, indent=4)
-            f.truncate()  # Truncate the file to avoid leftover data
+            f.truncate() 
 
-        messagebox.showinfo("Update Successful", f"Product '{name}' updated successfully.")
+        # Message apears if information is updated
+        messagebox.showinfo("Success", f"Product '{name}' updated successfully.")
 
     # Divide screen
     main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL)
@@ -505,7 +556,7 @@ def update_prod(panel):
     left_frame = tk.Frame(main_pane)
     main_pane.add(left_frame, width=200)
 
-    # Add "Click to Grab Produce" button
+    # "Click to Grab Produce" button
     grab_button = tk.Button(left_frame, text="Click to Grab Information", command=grab_data)
     grab_button.pack(pady=10, padx=10)
 
@@ -525,20 +576,20 @@ def update_prod(panel):
     sub_frame = tk.Frame(right_frame, bg=right_frame.cget('bg'))
     sub_frame.pack(pady=20)
 
-    # PRODUCT NAME INPUT
+    # Product Name Input
     prod_name_label = tk.Label(sub_frame, text="Product Name:")
     prod_name_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
     prod_name_input = tk.Entry(sub_frame)
     prod_name_input.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
     prod_name_input.bind("<FocusOut>", lambda event, entry=prod_name_input: check_special_chars(entry))
 
-    # QUANTITY INPUT
+    # Quantity Input
     qty_label = tk.Label(sub_frame, text="Quantity:")
     qty_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
     qty_input = tk.Entry(sub_frame)
     qty_input.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
-    # FOOD GROUP (Radio buttons)
+    # Food Group (Radio buttons)
     group_label = tk.Label(sub_frame, text="Food Group:")
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
@@ -548,11 +599,10 @@ def update_prod(panel):
         radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
         radio.grid(row=3 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
-    # NUTRITIONAL INFORMATION (Check buttons)
+    # Nutritional Information (Check buttons)
     info_label = tk.Label(sub_frame, text="Nutritional Information:")
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
-    # Create IntVars for each nutrition checkbox
     veg_var, vegan_var, gluten_var, lactose_var, eggs_var, nuts_var, halal_var, kosher_var = (tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar())
     check_vars = {
         "Vegetarian": veg_var,
@@ -569,25 +619,33 @@ def update_prod(panel):
         check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0)
         check.grid(row=6 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
-    # EXPIRATION DATE
+    # Expiration Date
     exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):")
     exp_date_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.E)
     date_entry = tk.Entry(sub_frame)
     date_entry.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
-    date_entry.bind("<FocusOut>", lambda e: format_date(date_entry))  # Bind date formatting
+    date_entry.bind("<FocusOut>", lambda e: format_date(date_entry)) 
 
-    # DATE ADDED
+    # Date Added
     add_date_label = tk.Label(sub_frame, text="Add Date (MM/DD/YY):")
     add_date_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.E)
     add_entry = tk.Entry(sub_frame)
     add_entry.grid(row=11, column=1, padx=5, pady=5, sticky=tk.W)
-    add_entry.bind("<FocusOut>", lambda e: format_date(add_entry))  # Bind date formatting
+    add_entry.bind("<FocusOut>", lambda e: format_date(add_entry)) 
+
+    # User Name Input
+    user_name_label = tk.Label(sub_frame, text="User Name:")
+    user_name_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.E)
+    user_name_input = tk.Entry(sub_frame)
+    user_name_input.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
+    user_name_input.bind("<FocusOut>", lambda event, entry=user_name_input: check_special_chars(entry))
 
     # Update button
     update_btn = tk.Button(sub_frame, text="Update", command=store)
-    update_btn.grid(row=12, column=1, padx=5, pady=5)
+    update_btn.grid(row=13, column=1, padx=5, pady=5)
 
     return
+
 
 # Delete Existing Product
 def delete_prod(panel):
@@ -611,14 +669,14 @@ def delete_prod(panel):
     Returns:
         None
     """
-    global my_prod  # Declare my_prod as global
+    global my_prod 
 
-    my_prod = load_prod()  # Load product data from the JSON file
+    my_prod = load_prod()  
 
     # Function to find a product by name
     def find_by_name():
         search_query = search_entry.get().lower()
-        users_listbox.delete(0, tk.END)  # Clear current list
+        users_listbox.delete(0, tk.END) 
         for prod in my_prod:
             if search_query in prod["Name"].lower():
                 users_listbox.insert(tk.END, str(prod["Name"]))
@@ -692,7 +750,7 @@ def search_prod(panel):
     Returns:
         None
     """
-    my_prod = load_prod()  # Load product data
+    my_prod = load_prod() 
 
     # Function to display search results
     def display_results(filtered_products):
@@ -707,7 +765,7 @@ def search_prod(panel):
                         nutritional_info.append(key)
                 
                 nutritional_info_str = ", ".join(nutritional_info) if nutritional_info else "None"
-                result_text.insert(tk.END, f"{prod['Name']} - {prod['Quantity']} QTY - {group_name} - {nutritional_info_str}\n")
+                result_text.insert(tk.END, f"{prod['Name']} - {prod['Quantity']} QTY - {group_name} - {nutritional_info_str}\n Expiration date: {prod['Exp']} - Added Date: {prod['Add']} - {prod['User']}\n")
         else:
             result_text.insert(tk.END, "No products found.\n")
 
@@ -778,12 +836,14 @@ def check_agreements():
     Returns:
         bool: `True` if the user agrees to the terms, `False` otherwise.
     """
+    # Checks verification if it exists
     if os.path.exists(VERIFICATION):
         with open(VERIFICATION, "r") as file:
             content = file.read().strip().lower()
             if content in ["yes", "true"]:
                 return True
 
+    # Screen for agreement
     agreement_root = tk.Tk()
     agreement_root.title("User Agreement")
     agreement_root.protocol("WM_DELETE_WINDOW", sys.exit)
@@ -791,22 +851,16 @@ def check_agreements():
     # Create a label with a clickable link for EULA
     eula_label = Label(agreement_root, text="EULA (click to view)", fg="blue")
     eula_label.pack(pady=10)
-
-    # Bind click event to open the EULA HTML file
     eula_label.bind("<Button-1>", lambda e: open_html(EULA_AGREEMENT))
 
     # Create a label with a clickable link for Privacy Policy
     privacy_label = Label(agreement_root, text="Privacy Policy (click to view)", fg="blue")
     privacy_label.pack(pady=10)
-
-    # Bind click event to open the Privacy Policy HTML file
     privacy_label.bind("<Button-1>", lambda e: open_html(PRIVACY_POLICY))
 
     # Create a label with a clickable link for Terms and Conditions
     terms_label = Label(agreement_root, text="Terms and Conditions (click to view)", fg="blue")
     terms_label.pack(pady=10)
-
-    # Bind click event to open the Terms and Conditions HTML file
     terms_label.bind("<Button-1>", lambda e: open_html(TERMS_CONDITIONS))
 
     # Agreement buttons
@@ -820,11 +874,13 @@ def check_agreements():
             file.write("no")
         sys.exit()
 
+    # Buttons to Agree
     btn_yes = tk.Button(agreement_root, text="Yes, I agree", command=on_yes)
     btn_no = tk.Button(agreement_root, text="No, I don't agree", command=on_no)
     btn_yes.pack(side=tk.LEFT, padx=5, pady=10)
     btn_no.pack(side=tk.RIGHT, padx=5, pady=10)
 
+    # Creates Verification
     agreement_root.mainloop()
     return os.path.exists(VERIFICATION) and open(VERIFICATION).read().strip() == "yes"
 
@@ -851,6 +907,7 @@ def main():
     Returns:
         None
     """
+    # Checks if Agreement is true
     if not check_agreements():
         return
     root = main_window()

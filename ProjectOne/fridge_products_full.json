@@ -14,8 +14,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "06/20/25",
-            "Add": "092424"
+            "Exp": "10/04/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Eggs",
@@ -31,8 +32,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "09/03/25",
-            "Add": "092424"
+            "Exp": "10/22/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Cheese",
@@ -48,8 +50,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "05/26/25",
-            "Add": "092424"
+            "Exp": "10/01/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Butter",
@@ -65,8 +68,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "11/27/24",
-            "Add": "092424"
+            "Exp": "02/24/25",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Yogurt",
@@ -82,8 +86,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/10/25",
-            "Add": "092424"
+            "Exp": "10/01/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Lettuce",
@@ -99,8 +104,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "10/24/24",
-            "Add": "092424"
+            "Exp": "10/04/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Carrots",
@@ -116,8 +122,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "11/28/24",
-            "Add": "092424"
+            "Exp": "10/15/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Tomatoes",
@@ -133,8 +140,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "12/30/24",
-            "Add": "092424"
+            "Exp": "09/29/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Apples",
@@ -150,8 +158,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "02/21/25",
-            "Add": "092424"
+            "Exp": "10/01/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Oranges",
@@ -167,8 +176,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "05/07/25",
-            "Add": "092424"
+            "Exp": "10/01/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Chicken",
@@ -184,8 +194,9 @@
                 "Halal": 1,
                 "Kosher": 1
             },
-            "Exp": "03/01/25",
-            "Add": "092424"
+            "Exp": "09/26/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Beef",
@@ -201,8 +212,9 @@
                 "Halal": 1,
                 "Kosher": 1
             },
-            "Exp": "01/15/25",
-            "Add": "092424"
+            "Exp": "09/27/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Pork",
@@ -218,8 +230,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "02/08/25",
-            "Add": "092424"
+            "Exp": "09/26/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Tofu",
@@ -235,8 +248,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "08/13/25",
-            "Add": "092424"
+            "Exp": "10/01/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Almonds",
@@ -252,8 +266,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "02/09/25",
-            "Add": "092424"
+            "Exp": "09/24/26",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Peanut Butter",
@@ -269,8 +284,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "12/30/24",
-            "Add": "092424"
+            "Exp": "03/24/25",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Orange Juice",
@@ -286,8 +302,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "08/05/25",
-            "Add": "092424"
+            "Exp": "10/02/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Soda",
@@ -303,8 +320,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "04/02/25",
-            "Add": "092424"
+            "Exp": "06/24/25",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Water",
@@ -320,8 +338,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "01/09/25",
-            "Add": "092424"
+            "Exp": "12/24/26",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Spinach",
@@ -337,8 +356,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/14/25",
-            "Add": "092424"
+            "Exp": "10/01/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Broccoli",
@@ -354,8 +374,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "05/22/25",
-            "Add": "092424"
+            "Exp": "09/29/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Cucumber",
@@ -371,8 +392,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "09/29/24",
-            "Add": "092424"
+            "Exp": "10/08/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Bread",
@@ -388,8 +410,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/29/25",
-            "Add": "092424"
+            "Exp": "09/26/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Jam",
@@ -405,8 +428,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "12/29/24",
-            "Add": "092424"
+            "Exp": "04/24/25",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Hummus",
@@ -422,8 +446,9 @@
                 "Halal": 1,
                 "Kosher": 1
             },
-            "Exp": "07/07/25",
-            "Add": "092424"
+            "Exp": "11/24/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Olives",
@@ -439,8 +464,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "10/27/24",
-            "Add": "092424"
+            "Exp": "09/24/26",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Pickles",
@@ -456,8 +482,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "05/12/25",
-            "Add": "092424"
+            "Exp": "12/07/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Pasta",
@@ -473,8 +500,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "07/15/25",
-            "Add": "092424"
+            "Exp": "09/24/26",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Rice",
@@ -490,8 +518,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "01/09/25",
-            "Add": "092424"
+            "Exp": "09/24/26",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Mushrooms",
@@ -507,8 +536,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/18/25",
-            "Add": "092424"
+            "Exp": "10/04/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Bell Peppers",
@@ -524,8 +554,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "10/04/24",
-            "Add": "092424"
+            "Exp": "09/24/26",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Salmon",
@@ -541,8 +572,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "07/23/25",
-            "Add": "092424"
+            "Exp": "09/28/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Tuna",
@@ -558,8 +590,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/12/25",
-            "Add": "092424"
+            "Exp": "09/24/29",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Shrimp",
@@ -575,8 +608,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "09/10/25",
-            "Add": "092424"
+            "Exp": "12/24/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Sausage",
@@ -592,8 +626,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "07/12/25",
-            "Add": "092424"
+            "Exp": "09/28/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Bacon",
@@ -609,8 +644,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "06/22/25",
-            "Add": "092424"
+            "Exp": "10/01/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Frozen Pizza",
@@ -626,8 +662,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "10/22/24",
-            "Add": "092424"
+            "Exp": "03/24/26",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Ice Cream",
@@ -643,11 +680,12 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/09/25",
-            "Add": "092424"
+            "Exp": "11/05/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
-            "Name": "Butter",
+            "Name": "Nut Butter",
             "Quantity": "8",
             "Group": 5,
             "Info": {
@@ -656,12 +694,13 @@
                 "Gluten": 0,
                 "Lactose": 1,
                 "Eggs": 0,
-                "Nuts": 0,
+                "Nuts": 1,
                 "Halal": 1,
                 "Kosher": 1
             },
-            "Exp": "09/24/25",
-            "Add": "092424"
+            "Exp": "11/24/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Mayonnaise",
@@ -677,8 +716,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "10/11/24",
-            "Add": "092424"
+            "Exp": "10/24/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Mustard",
@@ -694,8 +734,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "07/01/25",
-            "Add": "092424"
+            "Exp": "09/24/25",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Ketchup",
@@ -711,8 +752,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "09/15/25",
-            "Add": "092424"
+            "Exp": "03/24/25",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Soy Sauce",
@@ -728,8 +770,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "07/23/25",
-            "Add": "092424"
+            "Exp": "03/24/25",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Grapes",
@@ -745,8 +788,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "10/12/24",
-            "Add": "092424"
+            "Exp": "10/08/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Bananas",
@@ -762,8 +806,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "12/20/24",
-            "Add": "092424"
+            "Exp": "09/29/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Potatoes",
@@ -779,8 +824,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/27/25",
-            "Add": "092424"
+            "Exp": "11/24/24",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Onions",
@@ -796,8 +842,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "11/02/24",
-            "Add": "092424"
+            "Exp": "12/24/24",
+            "Add": "09/24/24",
+            "User": "Nathan"
         },
         {
             "Name": "Garlic",
@@ -813,8 +860,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "03/20/25",
-            "Add": "092424"
+            "Exp": "03/24/25",
+            "Add": "09/24/24",
+            "User": "Riley"
         },
         {
             "Name": "Peas",
@@ -830,8 +878,9 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "02/03/25",
-            "Add": "092424"
+            "Exp": "09/27/24",
+            "Add": "09/24/24",
+            "User": "Dawlat"
         },
         {
             "Name": "Corn",
@@ -847,8 +896,27 @@
                 "Halal": 0,
                 "Kosher": 0
             },
-            "Exp": "07/20/25",
-            "Add": "092424"
+            "Exp": "09/27/24",
+            "Add": "09/24/24",
+            "User": "Riley"
+        },
+        {
+            "Name": "Snap Peas",
+            "Quantity": "7",
+            "Group": 3,
+            "Info": {
+                "Vegetarian": 1,
+                "Vegan": 1,
+                "Gluten": 0,
+                "Lactose": 0,
+                "Eggs": 0,
+                "Nuts": 0,
+                "Halal": 1,
+                "Kosher": 1
+            },
+            "Exp": "10/02/24",
+            "Add": "09/29/24",
+            "User": "Nathan"
         }
     ]
 }
