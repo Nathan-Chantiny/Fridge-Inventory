@@ -310,8 +310,12 @@ def add_prod(panel):
         if not validate_qty(qty_input.get()):
             messagebox.showerror("Input Error", "Quantity must be a positive number.")
             return
+        
+        # Create the unique identifier by concatenating Name and Exp
+        unique_id = prod_name_input.get() + exp_date_entry.get()
 
         new_prod = {
+            "UniqueID": unique_id,
             "Name": prod_name_input.get(),
             "Quantity": qty_input.get(),
             "Group": var1.get(),  # The selected radio button value
