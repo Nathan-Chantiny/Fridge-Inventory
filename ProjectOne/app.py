@@ -60,14 +60,14 @@ def main_window():
     """
     Initializes and configures the main window for the Tkinter application.
 
-    This function creates the root window with a title "Group 6 - Project 1" and 
+    This function creates the root window with a title "FoodConnect" and 
     sets the dimensions of the window to 600x800 pixels.
 
     Returns:
         Tk: The root Tkinter window object that serves as the main application window.
     """
     root = tk.Tk()
-    root.title("Group 6 - Project 1")
+    root.title("FoodConnect")
     root.geometry('600x800')
     return root
 
