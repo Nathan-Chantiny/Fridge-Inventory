@@ -29,6 +29,7 @@ import os
 import json
 import re
 import sys
+import sqlite3
 
 # Constants
 HEIGHT = 3
@@ -54,6 +55,107 @@ EULA_AGREEMENT = os.path.join(CURRENT_DIR, "EULA.html")
 PRIVACY_POLICY = os.path.join(CURRENT_DIR, "Privacy_Policy.html")
 TERMS_CONDITIONS = os.path.join(CURRENT_DIR, "Terms_Conditions.html")
 VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
+
+# Connect to the database (if it doesn't exist, it will be created)
+def connect_db(db_name='products.db'):
+    conn = sqlite3.connect(db_name)
+    return conn
+
+# Function to create a 'products' table if it doesn't already exist
+def create_table(conn):
+    with conn:
+        conn.execute('''CREATE TABLE IF NOT EXISTS products (
+                            name TEXT,
+                            quantity INTEGER,
+                            "group" INTEGER,
+                            expiration DATE,
+                            "add" DATE,
+                            user TEXT,
+                            vegetarian BOOLEAN,
+                            vegan BOOLEAN,
+                            gluten BOOLEAN,
+                            lactose BOOLEAN,
+                            eggs BOOLEAN,
+                            nuts BOOLEAN,
+                            halal BOOLEAN,
+                            kosher BOOLEAN,
+                            PRIMARY KEY (name, expiration))''')
+
+# Class for handling products in the database
+class Product:
+    def __init__(self, name, quantity, group, expiration, add, user, info=None):
+        self.name = name
+        self.quantity = quantity
+        self.group = group
+        self.expiration = expiration
+        self.add = add
+        self.user = user
+        self.info = info if info else {
+            "Vegetarian": 0,
+            "Vegan": 0,
+            "Gluten": 0,
+            "Lactose": 0,
+            "Eggs": 0,
+            "Nuts": 0,
+            "Halal": 0,
+            "Kosher": 0
+        }
+
+    # Add a new product to the database
+    def add_product(self, conn):
+        with conn:
+            conn.execute('''INSERT INTO products 
+                            (name, quantity, "group", expiration, "add", user, vegetarian, vegan, gluten, lactose, eggs, nuts, halal, kosher)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', 
+                         (self.name, self.quantity, self.group, self.expiration, self.add, self.user, 
+                          self.info["Vegetarian"], self.info["Vegan"], self.info["Gluten"], self.info["Lactose"],
+                          self.info["Eggs"], self.info["Nuts"], self.info["Halal"], self.info["Kosher"]))
+
+    # Load a product from the database by name and expiration
+    @staticmethod
+    def load_product(conn, name, expiration):
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM products WHERE name = ? AND expiration = ?", (name, expiration))
+        row = cur.fetchone()
+        if row:
+            info = {
+                "Vegetarian": row[6],
+                "Vegan": row[7],
+                "Gluten": row[8],
+                "Lactose": row[9],
+                "Eggs": row[10],
+                "Nuts": row[11],
+                "Halal": row[12],
+                "Kosher": row[13]
+            }
+            return Product(row[0], row[1], row[2], row[3], row[4], row[5], info)
+        else:
+            return None
+
+    # Update a product in the database
+    def update_product(self, conn):
+        with conn:
+            conn.execute('''UPDATE products SET 
+                            quantity = ?, "group" = ?, "add" = ?, user = ?, vegetarian = ?, vegan = ?, gluten = ?, lactose = ?, eggs = ?, nuts = ?, halal = ?, kosher = ?
+                            WHERE name = ? AND expiration = ?''',
+                         (self.quantity, self.group, self.add, self.user, 
+                          self.info["Vegetarian"], self.info["Vegan"], self.info["Gluten"], self.info["Lactose"],
+                          self.info["Eggs"], self.info["Nuts"], self.info["Halal"], self.info["Kosher"],
+                          self.name, self.expiration))
+
+    # Delete a product from the database
+    @staticmethod
+    def delete_product(conn, name, expiration):
+        with conn:
+            conn.execute("DELETE FROM products WHERE name = ? AND expiration = ?", (name, expiration))
+
+    # Search for products in the database by name (partial search)
+    @staticmethod
+    def search_product(conn, search_term):
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM products WHERE name LIKE ?", ('%' + search_term + '%',))
+        rows = cur.fetchall()
+        return rows
 
 # Main Window
 def main_window():
@@ -649,7 +751,6 @@ def update_prod(panel):
 
     return
 
-
 # Delete Existing Product
 def delete_prod(panel):
     """
@@ -915,6 +1016,9 @@ def main():
         return
     root = main_window()
     root.protocol("WM_DELETE_WINDOW", sys.exit)
+
+    conn = connect_db()  # Connect to the database
+    create_table(conn)   # Ensure the table exists
 
     # Create a frame for buttons and panel for content
     frame = tk.Frame(root)
