@@ -61,6 +61,42 @@ def connect_db(db_name='products.db'):
     conn = sqlite3.connect(db_name)
     return conn
 
+# Function to create login window
+def login_screen():
+    def verify_login():
+        username = username_entry.get()
+        password = password_entry.get()
+
+        # Simple verification (NEED TO EXTEND TO USE DATABASE)
+        if username == "admin" and password == "password":
+            login_window.destroy()
+            main()
+        else:
+            messagebox.showerror("Login Error", "Invalid username or password")
+
+    # Create the loin window
+    login_window = tk.Tk()
+    login_window.title("Login")
+    login_window.geometry('300x200')
+
+    # Username label and text entry box
+    username_label = tk.Label(login_window, text="Username")
+    username_label.pack(pady=10)
+    username_entry = tk.Entry(login_window)
+    username_entry.pack(pady=5)
+
+    #Password label and password entry box
+    password_label = tk.Label(login_window, text="Password")
+    password_label.pack(pady=10)
+    password_entry = tk.Entry(login_window, show='*') # Mask password input
+    password_entry.pack(pady=5)
+
+    # Login button
+    login_button = tk.Button(login_window, text="Login", command=verify_login)
+    login_button.pack(pady=20)
+
+    login_window.mainloop()
+
 # Function to create a 'products' table if it doesn't already exist
 def create_table(conn):
     with conn:
@@ -1014,6 +1050,7 @@ def main():
     # Checks if Agreement is true
     if not check_agreements():
         return
+
     root = main_window()
     root.protocol("WM_DELETE_WINDOW", sys.exit)
 
@@ -1035,4 +1072,4 @@ def main():
 
 # Starting Point
 if __name__ == "__main__":
-    main()
+    login_screen()
