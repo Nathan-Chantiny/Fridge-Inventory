@@ -31,6 +31,8 @@ import re
 import sys
 import sqlite3
 
+from click import command
+
 # Constants
 HEIGHT = 3
 WIDTH = 20
@@ -74,10 +76,50 @@ def login_screen():
         else:
             messagebox.showerror("Login Error", "Invalid username or password")
 
-    # Create the loin window
+    # Logic for register button
+    def on_register():
+        login_window.withdraw()
+        create_account()
+
+    # Register function
+    def create_account():
+        # Logic for submit button
+        def on_submit():
+            messagebox.showerror("Success", "Successfully created account!")
+            register_window.destroy()
+            login_window.deiconify()
+
+        # Create registration window
+        register_window = tk.Tk()
+        register_window.title("Registration")
+        register_window.geometry('300x300')
+
+        # Prompt for email
+        email_label = tk.Label(register_window, text="Email")
+        email_label.pack(pady=10)
+        email_entry = tk.Entry(register_window)
+        email_entry.pack(pady=5)
+
+        # Prompt for username
+        username_label = tk.Label(register_window, text="Username")
+        username_label.pack(pady=10)
+        username_entry = tk.Entry(register_window)
+        username_entry.pack(pady=5)
+
+        # Prompt for password
+        password_label = tk.Label(register_window, text="Password")
+        password_label.pack(pady=10)
+        password_entry = tk.Entry(register_window, show='*')
+        password_entry.pack(pady=5)
+
+        # Submit button (NEED TO UPDATE FUNCTION)
+        submit_button = tk.Button(register_window, text="Submit", command=on_submit)
+        submit_button.pack(pady=20)
+
+    # Create the login window
     login_window = tk.Tk()
     login_window.title("Login")
-    login_window.geometry('300x200')
+    login_window.geometry('300x300')
 
     # Username label and text entry box
     username_label = tk.Label(login_window, text="Username")
@@ -85,7 +127,7 @@ def login_screen():
     username_entry = tk.Entry(login_window)
     username_entry.pack(pady=5)
 
-    #Password label and password entry box
+    # Password label and password entry box
     password_label = tk.Label(login_window, text="Password")
     password_label.pack(pady=10)
     password_entry = tk.Entry(login_window, show='*') # Mask password input
@@ -94,6 +136,10 @@ def login_screen():
     # Login button
     login_button = tk.Button(login_window, text="Login", command=verify_login)
     login_button.pack(pady=20)
+
+    # Create register button
+    register_button = tk.Button(login_window, text="Register", command=on_register)
+    register_button.pack(pady=10)
 
     login_window.mainloop()
 
