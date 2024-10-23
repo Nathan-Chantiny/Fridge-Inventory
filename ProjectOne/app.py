@@ -89,10 +89,14 @@ def login_screen():
             register_window.destroy()
             login_window.deiconify()
 
+        def on_cancel():
+            register_window.destroy()
+            login_window.deiconify()
+
         # Create registration window
         register_window = tk.Tk()
         register_window.title("Registration")
-        register_window.geometry('300x300')
+        register_window.geometry('300x400')
 
         # Prompt for email
         email_label = tk.Label(register_window, text="Email")
@@ -115,6 +119,8 @@ def login_screen():
         # Submit button (NEED TO UPDATE FUNCTION)
         submit_button = tk.Button(register_window, text="Submit", command=on_submit)
         submit_button.pack(pady=20)
+        cancel_button = tk.Button(register_window, text="Cancel", command=on_cancel)
+        cancel_button.pack(padx=0)
 
     # Create the login window
     login_window = tk.Tk()
