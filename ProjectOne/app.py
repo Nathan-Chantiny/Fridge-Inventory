@@ -30,8 +30,8 @@ import json
 import re
 import sys
 import sqlite3
-import sys
-import bcrypt
+
+from click import command
 
 # Constants
 HEIGHT = 3
@@ -58,17 +58,99 @@ PRIVACY_POLICY = os.path.join(CURRENT_DIR, "Privacy_Policy.html")
 TERMS_CONDITIONS = os.path.join(CURRENT_DIR, "Terms_Conditions.html")
 VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
 
-# Userid to identify user currently active
-global logged_in_user_id
-logged_in_user_id = None
-
 # Connect to the database (if it doesn't exist, it will be created)
 def connect_db(db_name='products.db'):
     conn = sqlite3.connect(db_name)
     return conn
 
+# Function to create login window
+def login_screen():
+    def verify_login():
+        username = username_entry.get()
+        password = password_entry.get()
+
+        # Simple verification (NEED TO EXTEND TO USE DATABASE)
+        if username == "admin" and password == "password":
+            login_window.destroy()
+            main()
+        else:
+            messagebox.showerror("Login Error", "Invalid username or password")
+
+    # Logic for register button
+    def on_register():
+        login_window.withdraw()
+        create_account()
+
+    # Register function
+    def create_account():
+        # Logic for submit button
+        def on_submit():
+            messagebox.showerror("Success", "Successfully created account!")
+            register_window.destroy()
+            login_window.deiconify()
+
+        def on_cancel():
+            register_window.destroy()
+            login_window.deiconify()
+
+        # Create registration window
+        register_window = tk.Tk()
+        register_window.title("Registration")
+        register_window.geometry('300x400')
+
+        # Prompt for email
+        email_label = tk.Label(register_window, text="Email")
+        email_label.pack(pady=10)
+        email_entry = tk.Entry(register_window)
+        email_entry.pack(pady=5)
+
+        # Prompt for username
+        username_label = tk.Label(register_window, text="Username")
+        username_label.pack(pady=10)
+        username_entry = tk.Entry(register_window)
+        username_entry.pack(pady=5)
+
+        # Prompt for password
+        password_label = tk.Label(register_window, text="Password")
+        password_label.pack(pady=10)
+        password_entry = tk.Entry(register_window, show='*')
+        password_entry.pack(pady=5)
+
+        # Submit button (NEED TO UPDATE FUNCTION)
+        submit_button = tk.Button(register_window, text="Submit", command=on_submit)
+        submit_button.pack(pady=20)
+        cancel_button = tk.Button(register_window, text="Cancel", command=on_cancel)
+        cancel_button.pack(padx=0)
+
+    # Create the login window
+    login_window = tk.Tk()
+    login_window.title("Login")
+    login_window.geometry('300x300')
+
+    # Username label and text entry box
+    username_label = tk.Label(login_window, text="Username")
+    username_label.pack(pady=10)
+    username_entry = tk.Entry(login_window)
+    username_entry.pack(pady=5)
+
+    # Password label and password entry box
+    password_label = tk.Label(login_window, text="Password")
+    password_label.pack(pady=10)
+    password_entry = tk.Entry(login_window, show='*') # Mask password input
+    password_entry.pack(pady=5)
+
+    # Login button
+    login_button = tk.Button(login_window, text="Login", command=verify_login)
+    login_button.pack(pady=20)
+
+    # Create register button
+    register_button = tk.Button(login_window, text="Register", command=on_register)
+    register_button.pack(pady=10)
+
+    login_window.mainloop()
+
 # Function to create a 'products' table if it doesn't already exist
-def create_products(conn):
+def create_table(conn):
     with conn:
         conn.execute('''CREATE TABLE IF NOT EXISTS products (
                             name TEXT,
@@ -76,7 +158,7 @@ def create_products(conn):
                             "group" INTEGER,
                             expiration DATE,
                             "add" DATE,
-                            ser_id INTEGER, -- Associate products with a user
+                            user TEXT,
                             vegetarian BOOLEAN,
                             vegan BOOLEAN,
                             gluten BOOLEAN,
@@ -85,16 +167,7 @@ def create_products(conn):
                             nuts BOOLEAN,
                             halal BOOLEAN,
                             kosher BOOLEAN,
-                            PRIMARY KEY (name, expiration, user_id),
-                            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE)''')
-
-# Function to create a 'users' table if it doesn't already exist        
-def create_users(conn):
-    with conn:
-        conn.execute('''CREATE TABLE IF NOT EXISTS users (
-                            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            username TEXT NOT NULL UNIQUE,
-                            password_hash TEXT NOT NULL)''')
+                            PRIMARY KEY (name, expiration))''')
 
 # Class for handling products in the database
 class Product:
@@ -172,83 +245,6 @@ class Product:
         rows = cur.fetchall()
         return rows
 
-# Simple login screen
-def login_window():
-    login_root = tk.Tk()
-    login_root.title("Login or Sign Up")
-    login_root.geometry('300x200')
-
-    # Ensure that closing the window exits the program
-    def on_close():
-        sys.exit()  # Exit the entire application if login window is closed
-
-    login_root.protocol("WM_DELETE_WINDOW", on_close)  # Handle window close event
-
-    # Labels and entries for both login and sign-up
-    tk.Label(login_root, text="Username:").pack(pady=5)
-    username_entry = tk.Entry(login_root)
-    username_entry.pack(pady=5)
-
-    tk.Label(login_root, text="Password:").pack(pady=5)
-    password_entry = tk.Entry(login_root, show='*')
-    password_entry.pack(pady=5)
-
-    # A status label to display login or sign-up messages
-    status_label = tk.Label(login_root, text="")
-    status_label.pack(pady=5)
-
-    # Function to handle login
-    def login():
-        username = username_entry.get()
-        password = password_entry.get()
-
-        conn = connect_db()
-        cur = conn.cursor()
-        cur.execute("SELECT password_hash, user_id FROM users WHERE username = ?", (username,))
-        row = cur.fetchone()
-
-        if row and bcrypt.checkpw(password.encode(), row[0]):
-            global logged_in_user_id
-            logged_in_user_id = row[1]  # Store the logged-in user's ID
-            status_label.config(text="Login successful!", fg="green")
-            login_root.after(1000, login_root.destroy)  # Close login window after success
-            main()  # Launch the main app after successful login
-        else:
-            status_label.config(text="Invalid username or password", fg="red")
-
-    # Function to handle sign-up
-    def sign_up():
-        username = username_entry.get()
-        password = password_entry.get()
-
-        if not username or not password:
-            status_label.config(text="Username and password required", fg="red")
-            return
-
-        conn = connect_db()
-        cur = conn.cursor()
-
-        # Check if the username already exists
-        cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-        if cur.fetchone():
-            status_label.config(text="Username already exists", fg="red")
-            return
-
-        # Hash the password before storing it
-        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-
-        # Insert the new user into the database
-        cur.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, hashed_password))
-        conn.commit()
-
-        status_label.config(text="Sign-up successful! You can now log in.", fg="green")
-
-    # Buttons for login and sign-up
-    tk.Button(login_root, text="Login", command=login).pack(side=tk.LEFT, padx=20, pady=10)
-    tk.Button(login_root, text="Sign Up", command=sign_up).pack(side=tk.RIGHT, padx=20, pady=10)
-
-    login_root.mainloop()
-
 # Main Window
 def main_window():
     """
@@ -264,6 +260,27 @@ def main_window():
     root.title("FoodConnect")
     root.geometry('600x800')
     return root
+
+# Load Products
+def load_prod():
+    """
+    Loads the list of products from a JSON file.
+
+    This function checks if the specified product JSON file exists. If the file does not exist, 
+    it creates the file with a default structure, including an empty "products" list. It then 
+    reads the contents of the file and returns the list of products.
+
+    Returns:
+        list: A list of products loaded from the JSON file.
+    """
+    # Check if the file exists
+    if not os.path.exists(PROD_JSON):
+        # Create the file with a default structure if it doesn't exist
+        with open(PROD_JSON, 'w') as f:
+            json.dump({"products": []}, f)  # Create an empty product list
+    with open(PROD_JSON, 'r') as f:
+        data = json.load(f)
+    return data["products"]  # Return the list of products
 
 # Button Clicked
 def on_button_click(clicked_index, buttons, panel):
@@ -418,47 +435,7 @@ def validate_qty(qty):
         bool: True if the quantity is a positive integer, False otherwise.
     """
     return qty.isdigit() and int(qty) > 0
-
-# Load Products
-def load_prod(conn):
-    """
-    Loads the list of products from the database for the logged-in user.
-
-    Args:
-        conn (sqlite3.Connection): SQLite connection object.
-
-    Returns:
-        list: A list of products from the database.
-    """
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM products WHERE user_id = ?", (logged_in_user_id,))
-    rows = cur.fetchall()
-
-    # Format the results into a list of dictionaries for easier usage in the GUI
-    products = []
-    for row in rows:
-        product = {
-            "Name": row[0],
-            "Quantity": row[1],
-            "Group": row[2],
-            "Exp": row[3],
-            "Add": row[4],
-            "User": logged_in_user_id,
-            "Info": {
-                "Vegetarian": row[6],
-                "Vegan": row[7],
-                "Gluten": row[8],
-                "Lactose": row[9],
-                "Eggs": row[10],
-                "Nuts": row[11],
-                "Halal": row[12],
-                "Kosher": row[13]
-            }
-        }
-        products.append(product)
-    
-    return products
-
+        
 # Add New Product
 def add_prod(panel):
     """
@@ -556,46 +533,66 @@ def add_prod(panel):
 
     # Collect and Store Data
     def store():
-        # Collect the data from the form
-        name = prod_name_input.get()
-        quantity = qty_input.get()
-        group = var1.get()
-        exp_date = exp_date_entry.get()
-        add_date = add_date_entry.get()
+        """
+        Saves a new product entry to the JSON file.
 
-        # Nutritional Information
-        nutritional_info = {
-            "Vegetarian": nutrition_vars["Vegetarian"].get(),
-            "Vegan": nutrition_vars["Vegan"].get(),
-            "Gluten": nutrition_vars["Gluten"].get(),
-            "Lactose": nutrition_vars["Lactose"].get(),
-            "Eggs": nutrition_vars["Eggs"].get(),
-            "Nuts": nutrition_vars["Nuts"].get(),
-            "Halal": nutrition_vars["Halal"].get(),
-            "Kosher": nutrition_vars["Kosher"].get(),
-        }
+        This function collects the input data from the form (e.g., product name, quantity, 
+        expiration date, etc.), validates the quantity, and stores the product details in a 
+        JSON file (`PROD_JSON`). If the file does not exist or is corrupted, it initializes a 
+        new one. It also ensures the data structure is correct before appending new entries.
 
-        # Validate quantity
-        if not validate_qty(quantity):
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        # Validates the quantity input
+        if not validate_qty(qty_input.get()):
             messagebox.showerror("Input Error", "Quantity must be a positive number.")
             return
+        
+        # Create the unique identifier by concatenating Name and Exp
+        unique_id = prod_name_input.get() + exp_date_entry.get()
 
-        conn = connect_db()
-        cur = conn.cursor()
+        # The information that will be stored
+        new_prod = {
+            "UniqueID": unique_id,
+            "Name": prod_name_input.get(),
+            "Quantity": qty_input.get(),
+            "Group": var1.get(),  
+            "Info": {key: var.get() for key, var in nutrition_vars.items()},
+            "Exp": exp_date_entry.get(),
+            "Add": add_date_entry.get(),
+            "User": user_name_input.get()
+        }
 
-        # Insert into the database
-        cur.execute('''INSERT INTO products 
-                       (name, quantity, "group", expiration, "add", user_id, vegetarian, vegan, gluten, lactose, eggs, nuts, halal, kosher)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                    (name, quantity, group, exp_date, add_date, logged_in_user_id,
-                     nutritional_info["Vegetarian"], nutritional_info["Vegan"], nutritional_info["Gluten"],
-                     nutritional_info["Lactose"], nutritional_info["Eggs"], nutritional_info["Nuts"],
-                     nutritional_info["Halal"], nutritional_info["Kosher"]))
+        # Load the existing data and append new product
+        with open(PROD_JSON, 'r+') as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {"products": []}  # Initialize if file is empty or corrupted
 
-        conn.commit()
+            # Ensure that 'data' is a dictionary
+            if not isinstance(data, dict):
+                data = {"products": []}  # Reinitialize to correct structure if it's not a dictionary
+
+            if "products" not in data:
+                data["products"] = []  # Ensure "products" key exists
+
+            data["products"].append(new_prod)
+
+            # Write back the updated data
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+
+        # Message apears if information is added
         messagebox.showinfo("Success", "Product added successfully!")
-        sub_frame.destroy()
+        sub_frame.destroy()  # Clear the form after submission
 
+    # Submit Button
     submit_btn = tk.Button(sub_frame, text="Submit", command=store)
     submit_btn.grid(row=13, column=1, padx=5, pady=5)
 
@@ -625,7 +622,7 @@ def update_prod(panel):
     Returns:
         None
     """
-    products = load_prod(connect_db())
+    my_prod = load_prod()
 
     # Looks for the product
     def get_prod_data(name, products):
@@ -690,12 +687,15 @@ def update_prod(panel):
 
     # Stores the updated product into the JSON file with its updates    
     def store():
+        # Get the current values from the input fields
         name = prod_name_input.get()
         quantity = qty_input.get()
-        group = var1.get()
+        food_group = var1.get()
         exp_date = date_entry.get()
         add_date = add_entry.get()
+        user = user_name_input.get()
 
+        # Collect nutritional information
         nutritional_info = {
             "Vegetarian": veg_var.get(),
             "Vegan": vegan_var.get(),
@@ -707,21 +707,39 @@ def update_prod(panel):
             "Kosher": kosher_var.get(),
         }
 
-        conn = connect_db()
-        cur = conn.cursor()
+        # Load existing products
+        with open(PROD_JSON, 'r+') as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {"products": []}  # Initialize if file is empty or corrupted
 
-        # Update the product in the database
-        cur.execute('''UPDATE products SET 
-                       quantity = ?, "group" = ?, expiration = ?, "add" = ?, vegetarian = ?, vegan = ?, gluten = ?, lactose = ?, eggs = ?, nuts = ?, halal = ?, kosher = ?
-                       WHERE name = ? AND user_id = ?''',
-                    (quantity, group, exp_date, add_date,
-                     nutritional_info["Vegetarian"], nutritional_info["Vegan"], nutritional_info["Gluten"],
-                     nutritional_info["Lactose"], nutritional_info["Eggs"], nutritional_info["Nuts"],
-                     nutritional_info["Halal"], nutritional_info["Kosher"],
-                     name, logged_in_user_id))
+            # Find the product to update
+            product_found = False
+            for product in data["products"]:
+                if product["Name"] == name:
+                    # Update product data
+                    product["Quantity"] = quantity
+                    product["Group"] = food_group
+                    # product["Exp"] = exp_date
+                    product["Add"] = add_date
+                    product["Info"] = nutritional_info
+                    product["User"] = user
+                    product_found = True
+                    break
 
-        conn.commit()
-        messagebox.showinfo("Success", "Product updated successfully!")
+            if not product_found:
+                # Message apears if information is not updated
+                messagebox.showwarning("Fail", f"Product '{name}' not found.")
+                return
+
+            # Move the file cursor to the beginning and overwrite the file
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate() 
+
+        # Message apears if information is updated
+        messagebox.showinfo("Success", f"Product '{name}' updated successfully.")
 
     # Divide screen
     main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL)
@@ -824,7 +842,18 @@ def update_prod(panel):
 # Delete Existing Product
 def delete_prod(panel):
     """
-    Creates a GUI interface in the provided panel to search for and delete products from the SQLite database.
+    Creates a GUI interface in the provided panel to search for and delete products.
+
+    This function provides a form that allows users to search for products by name and delete them 
+    from the system. The product list is displayed in a listbox, and the user can search for a 
+    specific product by entering the name in the search bar. When a product is selected, the user 
+    can delete it after confirming the action. The product is removed from the JSON file that stores 
+    product data.
+
+    Key Features:
+    - A search bar to filter products by name.
+    - A listbox to display matching products.
+    - A delete button to remove the selected product, with confirmation dialogs for safety.
 
     Args:
         panel (Tkinter Frame): The frame where the form and product list will be displayed.
@@ -832,33 +861,21 @@ def delete_prod(panel):
     Returns:
         None
     """
-    conn = connect_db()
+    global my_prod 
 
-    # Function to refresh the listbox with current products
-    def refresh_listbox():
-        users_listbox.delete(0, tk.END)  # Clear the current listbox
-        cur = conn.cursor()
-        cur.execute("SELECT name FROM products WHERE user_id = ?", (logged_in_user_id,))
-        products = cur.fetchall()
-
-        for product in products:
-            users_listbox.insert(tk.END, product[0])
+    my_prod = load_prod()  
 
     # Function to find a product by name
     def find_by_name():
         search_query = search_entry.get().lower()
-        users_listbox.delete(0, tk.END)
-        cur = conn.cursor()
-        cur.execute("SELECT name FROM products WHERE name LIKE ? AND user_id = ?", ('%' + search_query + '%', logged_in_user_id))
-        results = cur.fetchall()
-
-        for result in results:
-            users_listbox.insert(tk.END, result[0])
+        users_listbox.delete(0, tk.END) 
+        for prod in my_prod:
+            if search_query in prod["Name"].lower():
+                users_listbox.insert(tk.END, str(prod["Name"]))
 
     # Function to remove the selected product
     def remove_selected():
         selected_product = users_listbox.get(tk.ACTIVE)
-
         if not selected_product:
             messagebox.showwarning("Selection Error", "No product selected!")
             return
@@ -866,12 +883,16 @@ def delete_prod(panel):
         # Confirm deletion
         response = messagebox.askyesno("Delete Confirmation", f"Are you sure you want to delete '{selected_product}'?")
         if response:
-            cur = conn.cursor()
-            cur.execute("DELETE FROM products WHERE name = ? AND user_id = ?", (selected_product, logged_in_user_id))
-            conn.commit()
+            global my_prod  # Ensure you're using the global variable
+            my_prod = [prod for prod in my_prod if prod["Name"] != selected_product]
 
+            # Update the JSON file
+            with open(PROD_JSON, 'w') as f:
+                json.dump({"products": my_prod}, f, indent=4)
+
+            # Refresh the listbox and show success message
+            find_by_name()  # Refresh the search results
             messagebox.showinfo("Success", f"Product '{selected_product}' deleted successfully!")
-            refresh_listbox()
 
     # Layout for delete
     sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
@@ -891,7 +912,8 @@ def delete_prod(panel):
     users_listbox.grid(row=2, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
     # Populate the Listbox with all products initially
-    refresh_listbox()
+    for prod in my_prod:
+        users_listbox.insert(tk.END, str(prod["Name"]))
 
     # Delete button
     delete_btn = tk.Button(sub_frame, text="Delete", command=remove_selected)
@@ -920,34 +942,29 @@ def search_prod(panel):
     Returns:
         None
     """
-    conn = connect_db()
+    my_prod = load_prod() 
 
     # Function to display search results
     def display_results(filtered_products):
         result_text.delete('1.0', tk.END)
         if filtered_products:
             for prod in filtered_products:
-                group_name = food_groups[prod[2] - 1]  # Assuming group is an index starting from 1
-                nutritional_info_str = ", ".join([key for key, value in {
-                    "Vegetarian": prod[6],
-                    "Vegan": prod[7],
-                    "Gluten": prod[8],
-                    "Lactose": prod[9],
-                    "Eggs": prod[10],
-                    "Nuts": prod[11],
-                    "Halal": prod[12],
-                    "Kosher": prod[13]
-                }.items() if value == 1]) or "None"
-                result_text.insert(tk.END, f"{prod[0]} - {prod[1]} QTY - {group_name} - {nutritional_info_str}\n Expiration: {prod[3]} - Added: {prod[4]}\n")
+                # Format the output
+                group_name = food_groups[prod['Group'] - 1]  # Assuming group is an index starting from 1
+                nutritional_info = []
+                for key, value in prod['Info'].items():
+                    if value == 1:
+                        nutritional_info.append(key)
+                
+                nutritional_info_str = ", ".join(nutritional_info) if nutritional_info else "None"
+                result_text.insert(tk.END, f"ID: {prod['UniqueID']}\n {prod['Name']} - {prod['Quantity']} QTY - {group_name} - {nutritional_info_str}\n Expiration date: {prod['Exp']} - Added Date: {prod['Add']} - {prod['User']}\n")
         else:
             result_text.insert(tk.END, "No products found.\n")
 
     # Function to search by name
     def search_by_name():
         search_query = name_entry.get().lower()
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM products WHERE name LIKE ? AND user_id = ?", ('%' + search_query + '%', logged_in_user_id))
-        filtered_products = cur.fetchall()
+        filtered_products = [prod for prod in my_prod if search_query in prod['Name'].lower()]
         display_results(filtered_products)
 
     # Layout for search options
@@ -1085,12 +1102,12 @@ def main():
     # Checks if Agreement is true
     if not check_agreements():
         return
+
     root = main_window()
     root.protocol("WM_DELETE_WINDOW", sys.exit)
 
-    conn = connect_db()   # Connect to the database
-    create_users(conn)    # Ensure the table exists
-    create_products(conn) # Ensure the table exists
+    conn = connect_db()  # Connect to the database
+    create_table(conn)   # Ensure the table exists
 
     # Create a frame for buttons and panel for content
     frame = tk.Frame(root)
@@ -1107,5 +1124,4 @@ def main():
 
 # Starting Point
 if __name__ == "__main__":
-    login_window()
-    main()
+    login_screen()
