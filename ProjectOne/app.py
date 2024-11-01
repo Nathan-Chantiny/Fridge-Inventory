@@ -62,6 +62,9 @@ VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
 global logged_in_user_id
 logged_in_user_id = None
 
+# hopefully fixes a problem
+root = None
+
 # Connect to the database (if it doesn't exist, it will be created)
 def connect_db(db_name='products.db'):
     conn = sqlite3.connect(db_name)
@@ -76,7 +79,7 @@ def create_products(conn):
                             "group" INTEGER,
                             expiration DATE,
                             "add" DATE,
-                            ser_id INTEGER, -- Associate products with a user
+                            user_id INTEGER,  -- Add this line
                             vegetarian BOOLEAN,
                             vegan BOOLEAN,
                             gluten BOOLEAN,
@@ -260,6 +263,7 @@ def main_window():
     Returns:
         Tk: The root Tkinter window object that serves as the main application window.
     """
+    global root
     root = tk.Tk()
     root.title("FoodConnect")
     root.geometry('600x800')
@@ -484,6 +488,8 @@ def add_prod(panel):
     Returns:
         None
     """
+    global root
+
     # Set up for the Add Panel
     sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
     sub_frame.pack(pady=20)
@@ -508,7 +514,7 @@ def add_prod(panel):
     group_label = tk.Label(sub_frame, text="Food Group:")
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
-    var1 = tk.IntVar()
+    var1 = tk.IntVar(master=root)
     food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
         radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
@@ -519,14 +525,14 @@ def add_prod(panel):
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
     nutrition_vars = {
-        "Vegetarian": tk.IntVar(),
-        "Vegan": tk.IntVar(),
-        "Gluten": tk.IntVar(),
-        "Lactose": tk.IntVar(),
-        "Eggs": tk.IntVar(),
-        "Nuts": tk.IntVar(),
-        "Halal": tk.IntVar(),
-        "Kosher": tk.IntVar()
+        "Vegetarian": tk.IntVar(master=root),
+        "Vegan": tk.IntVar(master=root),
+        "Gluten": tk.IntVar(master=root),
+        "Lactose": tk.IntVar(master=root),
+        "Eggs": tk.IntVar(master=root),
+        "Nuts": tk.IntVar(master=root),
+        "Halal": tk.IntVar(master=root),
+        "Kosher": tk.IntVar(master=root)
     }
 
     for i, (text, var) in enumerate(nutrition_vars.items(), start=1):
@@ -649,7 +655,7 @@ def update_prod(panel):
             return
         
         selected_name = users_listbox.get(selection[0])  # Get the selected name
-        product = get_prod_data(selected_name, my_prod)
+        product = get_prod_data(selected_name, products)
         
         if product:
             # Populate the text field with the product's name
@@ -741,7 +747,7 @@ def update_prod(panel):
     users_listbox.bind("<<ListboxSelect>>", on_select) 
 
     # Existing Product Information
-    for prod in my_prod:
+    for prod in products:
         users_listbox.insert(tk.END, str(prod["Name"]))
 
     # Right side = Product Information
@@ -768,7 +774,7 @@ def update_prod(panel):
     group_label = tk.Label(sub_frame, text="Food Group:")
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
-    var1 = tk.IntVar()
+    var1 = tk.IntVar(master=root)
     food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
         radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
@@ -778,7 +784,7 @@ def update_prod(panel):
     info_label = tk.Label(sub_frame, text="Nutritional Information:")
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
-    veg_var, vegan_var, gluten_var, lactose_var, eggs_var, nuts_var, halal_var, kosher_var = (tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar())
+    veg_var, vegan_var, gluten_var, lactose_var, eggs_var, nuts_var, halal_var, kosher_var = (tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root))
     check_vars = {
         "Vegetarian": veg_var,
         "Vegan": vegan_var,
@@ -1082,6 +1088,8 @@ def main():
     Returns:
         None
     """
+    global root
+
     # Checks if Agreement is true
     if not check_agreements():
         return
