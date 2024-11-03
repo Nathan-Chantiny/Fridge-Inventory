@@ -96,6 +96,7 @@ def create_users(conn):
     with conn:
         conn.execute('''CREATE TABLE IF NOT EXISTS users (
                             user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            email TEXT NOT NULL UNIQUE,
                             username TEXT NOT NULL UNIQUE,
                             password_hash TEXT NOT NULL)''')
 
@@ -178,12 +179,16 @@ class Product:
 # Simple login screen
 def login_window():
     login_root = tk.Tk()
-    login_root.title("Login or Sign Up")
-    login_root.geometry('300x200')
+    login_root.title("FoodConnect")
+    login_root.geometry('300x300')
 
     # Ensure that closing the window exits the program
     def on_close():
         sys.exit()  # Exit the entire application if login window is closed
+
+    def on_register(): 
+        login_root.iconify()
+        sign_up()
 
     login_root.protocol("WM_DELETE_WINDOW", on_close)  # Handle window close event
 
@@ -221,34 +226,92 @@ def login_window():
 
     # Function to handle sign-up
     def sign_up():
-        username = username_entry.get()
-        password = password_entry.get()
 
-        if not username or not password:
-            status_label.config(text="Username and password required", fg="red")
-            return
+        def on_close_register():
+            result = messagebox.askquestion('Exit',"Are you sure you wish to cancel?")
+            if result == 'yes':
+                registration.destroy()
+                login_root.deiconify()
 
-        conn = connect_db()
-        cur = conn.cursor()
+        def on_submit():
+            email_pattern = r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$'
+            email = email_entry.get()
+            username = username_entry.get()
+            password = password_entry.get()
+            confirm_password = confirm_password_entry.get()
+            
+            # Validate user input
+            if not username or not password or not email or not confirm_password:
+                messagebox.showerror("Missing fields!", "All fields are required!")
+            elif not re.match(email_pattern, email):
+                messagebox.showerror("Invalid Email!", "Enter a valid email address!")
+            elif password != confirm_password:
+                messagebox.showerror("Password mismatch!", "Passwords do not match!")
+            else:                
+                conn = connect_db()
+                cur = conn.cursor()
 
-        # Check if the username already exists
-        cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-        if cur.fetchone():
-            status_label.config(text="Username already exists", fg="red")
-            return
+                # Check if the username already exists
+                cur.execute("SELECT * FROM users WHERE username = ?", (username,))
+                if cur.fetchone():
+                    messagebox.showerror("Username!", "Username already exists!")
+                else:
+                    # Hash the password before storing it
+                    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
-        # Hash the password before storing it
-        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+                    # Insert the new user into the database
+                    cur.execute("INSERT INTO users (email, username, password_hash) VALUES (?, ?)", (email, username, hashed_password))
+                    conn.commit()
 
-        # Insert the new user into the database
-        cur.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, hashed_password))
-        conn.commit()
+                    messagebox.showinfo("Success!", "Account created successfully!")
+                    registration.destroy()
+                    login_root.deiconify()
+                
+        
+        # Create the registration window
+        registration = tk.Tk()
+        registration.title("FoodConnect")
+        registration.geometry("300x400")
+        registration.protocol("WM_DELETE_WINDOW", on_close_register)
 
-        status_label.config(text="Sign-up successful! You can now log in.", fg="green")
+        # Label and entry for Email
+        email_label = tk.Label(registration, text="Email:")
+        email_label.pack(pady=5)
+
+        email_entry = tk.Entry(registration)
+        email_entry.pack(pady=5)
+
+        # Label and entry for username
+        username_label = tk.Label(registration, text="Username:")
+        username_label.pack(pady=5)
+
+        username_entry = tk.Entry(registration)
+        username_entry.pack(pady=5)
+
+        # Label and entry for password
+        password_label = tk.Label(registration, text="Password:")
+        password_label.pack(pady=5)
+
+        password_entry = tk.Entry(registration, show='*')
+        password_entry.pack(pady=5)
+
+        confirm_password_label = tk.Label(registration, text="Confirm Password:")
+        confirm_password_label.pack(pady=5)
+
+        confirm_password_entry = tk.Entry(registration, show='*')
+        confirm_password_entry.pack(pady=5)
+
+        # Submit button
+        submit_button = tk.Button(registration, text="Submit", command=on_submit)
+        submit_button.pack(pady=20)
+
+        # Cancel Button
+        cancel_button = tk.Button(registration, text="Cancel", command=on_close_register)
+        cancel_button.pack(pady=5)
 
     # Buttons for login and sign-up
-    tk.Button(login_root, text="Login", command=login).pack(side=tk.LEFT, padx=20, pady=10)
-    tk.Button(login_root, text="Sign Up", command=sign_up).pack(side=tk.RIGHT, padx=20, pady=10)
+    tk.Button(login_root, text="Login", command=login).pack(side=tk.TOP, padx=20, pady=10)
+    tk.Button(login_root, text="Register", command=on_register).pack(side=tk.TOP, padx=20, pady=10)
 
     login_root.mainloop()
 
