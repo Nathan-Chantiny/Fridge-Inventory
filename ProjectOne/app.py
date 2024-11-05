@@ -79,7 +79,7 @@ def create_products(conn):
                             "group" INTEGER,
                             expiration DATE,
                             "add" DATE,
-                            user_id INTEGER,  -- Add this line
+                            user_id INTEGER,
                             vegetarian BOOLEAN,
                             vegan BOOLEAN,
                             gluten BOOLEAN,
@@ -88,7 +88,6 @@ def create_products(conn):
                             nuts BOOLEAN,
                             halal BOOLEAN,
                             kosher BOOLEAN,
-                            PRIMARY KEY (name, expiration, user_id),
                             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE)''')
 
 # Function to create a 'users' table if it doesn't already exist        
@@ -260,7 +259,7 @@ def login_window():
                     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
                     # Insert the new user into the database
-                    cur.execute("INSERT INTO users (email, username, password_hash) VALUES (?, ?)", (email, username, hashed_password))
+                    cur.execute("INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)", (email, username, hashed_password))
                     conn.commit()
 
                     messagebox.showinfo("Success!", "Account created successfully!")
@@ -697,9 +696,9 @@ def update_prod(panel):
     products = load_prod(connect_db())
 
     # Looks for the product
-    def get_prod_data(name, products):
+    def get_prod_data(name, exp, products):
         for product in products:
-            if product["Name"] == name:
+            if product["Name"] == name and product["Exp"] == exp:
                 return product
         return None  # Return None if product is not found
 
@@ -717,8 +716,9 @@ def update_prod(panel):
             messagebox.showwarning("No Selection", "Please select a product to grab.")
             return
         
-        selected_name = users_listbox.get(selection[0])  # Get the selected name
-        product = get_prod_data(selected_name, products)
+        selected = users_listbox.get(selection[0])  # Get the selected name
+        selected = selected.split(" ")
+        product = get_prod_data(selected[0], selected[1], products)
         
         if product:
             # Populate the text field with the product's name
@@ -780,14 +780,10 @@ def update_prod(panel):
         cur = conn.cursor()
 
         # Update the product in the database
-        cur.execute('''UPDATE products SET 
-                       quantity = ?, "group" = ?, expiration = ?, "add" = ?, vegetarian = ?, vegan = ?, gluten = ?, lactose = ?, eggs = ?, nuts = ?, halal = ?, kosher = ?
-                       WHERE name = ? AND user_id = ?''',
-                    (quantity, group, exp_date, add_date,
-                     nutritional_info["Vegetarian"], nutritional_info["Vegan"], nutritional_info["Gluten"],
-                     nutritional_info["Lactose"], nutritional_info["Eggs"], nutritional_info["Nuts"],
-                     nutritional_info["Halal"], nutritional_info["Kosher"],
-                     name, logged_in_user_id))
+        cur.execute('''UPDATE products 
+                       SET quantity = ?
+                       WHERE name = ? AND expiration = ?''',
+                    (quantity, name, exp_date))
 
         conn.commit()
         messagebox.showinfo("Success", "Product updated successfully!")
@@ -811,7 +807,7 @@ def update_prod(panel):
 
     # Existing Product Information
     for prod in products:
-        users_listbox.insert(tk.END, str(prod["Name"]))
+        users_listbox.insert(tk.END, str(prod["Name"] + " " + prod["Exp"]))
 
     # Right side = Product Information
     right_frame = tk.Frame(main_pane)
