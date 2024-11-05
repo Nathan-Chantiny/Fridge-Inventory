@@ -24,6 +24,8 @@ Usage:
 import tkinter as tk
 import tkinter.messagebox as messagebox
 from tkinter import Label
+from tkinter import PhotoImage
+from PIL import Image, ImageTk
 import webbrowser
 import os
 import json
@@ -180,7 +182,7 @@ class Product:
 def login_window():
     login_root = tk.Tk()
     login_root.title("FoodConnect")
-    login_root.geometry('300x300')
+    login_root.geometry('700x600')
 
     # Ensure that closing the window exits the program
     def on_close():
@@ -191,6 +193,13 @@ def login_window():
         sign_up()
 
     login_root.protocol("WM_DELETE_WINDOW", on_close)  # Handle window close event
+
+    # Show application logo
+    image = Image.open('FC_LOGO.png')
+    image = ImageTk.PhotoImage(image)
+
+    image_label = tk.Label(login_root, image=image)
+    image_label.pack()
 
     # Labels and entries for both login and sign-up
     tk.Label(login_root, text="Username:").pack(pady=5)
