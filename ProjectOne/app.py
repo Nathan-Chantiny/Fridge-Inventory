@@ -194,6 +194,9 @@ def login_window():
 
     login_root.protocol("WM_DELETE_WINDOW", on_close)  # Handle window close event
 
+    conn = connect_db()  # Connect to the database
+    create_users(conn)   # Ensure users table exists
+
     # Show application logo
     image = Image.open('FC_LOGO.png')
     image = ImageTk.PhotoImage(image)
