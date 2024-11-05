@@ -269,7 +269,7 @@ def login_window():
                     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
                     # Insert the new user into the database
-                    cur.execute("INSERT INTO users (email, username, password_hash) VALUES (?, ?)", (email, username, hashed_password))
+                    cur.execute("INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)", (email, username, hashed_password))
                     conn.commit()
 
                     messagebox.showinfo("Success!", "Account created successfully!")
