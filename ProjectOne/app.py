@@ -21,18 +21,17 @@ Usage:
     Run the script to launch the GUI, and follow the prompts to input food-related data.
 """
 
-from tkinter import *
+from PIL import Image, ImageTk
 import tkinter as tk
 import tkinter.messagebox as messagebox
 from tkinter import Label
 import webbrowser
 import os
-import json
 import re
 import sys
 import sqlite3
+import sys
 import bcrypt
-from tkinter import PhotoImage
 
 # Constants
 HEIGHT = 3
@@ -43,6 +42,8 @@ LIGHT_BG = "MintCream"  # Light mode color for root, frames, etc.
 DARK_BG = "gray20"      # Dark mode color for root, frames, etc.
 FRAME_LIGHT_COLOR = "white"  # Light mode color for frames
 FRAME_DARK_COLOR = "black"     # Dark mode color for frames
+TEXT_LIGHT_COLOR = "black"  # Text color for light theme
+TEXT_DARK_COLOR = "MintCream"  # Text color for dark theme
 
 # Checks if the script is running in a "frozen" state
 if getattr(sys, 'frozen', False):
@@ -69,6 +70,9 @@ VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
 global logged_in_user_id
 logged_in_user_id = None
 
+# hopefully fixes a problem
+root = None
+
 # Connect to the database (if it doesn't exist, it will be created)
 def connect_db(db_name='products.db'):
     conn = sqlite3.connect(db_name)
@@ -83,7 +87,7 @@ def create_products(conn):
                             "group" INTEGER,
                             expiration DATE,
                             "add" DATE,
-                            ser_id INTEGER, -- Associate products with a user
+                            user_id INTEGER,  -- Add this line
                             vegetarian BOOLEAN,
                             vegan BOOLEAN,
                             gluten BOOLEAN,
@@ -258,121 +262,71 @@ def login_window():
 
 # Main Window
 def main_window():
-    """
-    Initializes and configures the main window for the Tkinter application.
-
-    This function creates the root window with a title "Group 6 - Project 1" and 
-    sets the dimensions of the window to 600x800 pixels.
-
-    Returns:
-        Tk: The root Tkinter window object that serves as the main application window.
-    """
+    global root
     root = tk.Tk()
     root.title("FoodConnect")
     root.geometry('600x800')
-    root.config(bg=LIGHT_BG)  
+    root.config(bg=LIGHT_BG)
 
-    # Build the full path to the image file
-    light_path = os.path.join(CURRENT_DIR, "light.png")
-    dark_path = os.path.join(CURRENT_DIR, "dark.png")
-
-    # Load the image using the constructed path
-    light = PhotoImage(file=light_path)
-    dark = PhotoImage(file=dark_path)
+    light = Image.open(os.path.join(CURRENT_DIR, "light.png"))
+    dark = Image.open(os.path.join(CURRENT_DIR, "dark.png"))
+    root.light_image = ImageTk.PhotoImage(light, master=root)
+    root.dark_image = ImageTk.PhotoImage(dark, master=root)
 
     switch_value = True
 
-    def toggle(panel, frame):
-        nonlocal switch_value
-
-        # Dark theme
-        if switch_value:
-            switch.config(image=dark, bg=DARK_BG, activebackground=DARK_BG)
-            root.config(bg=DARK_BG)
-            panel.config(bg=FRAME_DARK_COLOR)
-            frame.config(bg=FRAME_DARK_COLOR)
-
-            # Change all children in frame and panel to dark mode color
-            for widget in frame.winfo_children():
-                widget.config(bg=FRAME_DARK_COLOR)
-
-            for widget in panel.winfo_children():
-                widget.config(bg=FRAME_DARK_COLOR)
-
-            switch_value = False
-            
-        # Light theme
-        else:
-            switch.config(image=light, bg=LIGHT_BG, activebackground=LIGHT_BG)
-            root.config(bg=LIGHT_BG)
-            panel.config(bg=FRAME_LIGHT_COLOR)
-            frame.config(bg=FRAME_LIGHT_COLOR)
-
-            # Change all children in frame and panel to light mode color
-            for widget in frame.winfo_children():
-                widget.config(bg=FRAME_LIGHT_COLOR)
-
-            for widget in panel.winfo_children():
-                widget.config(bg=FRAME_LIGHT_COLOR)
-
-            switch_value = True
-            
-    # Toggle Button
-    switch = Button(root, image=light, bd=0, bg=LIGHT_BG, activebackground=LIGHT_BG,
-                    command=lambda: toggle(panel, frame))
-    switch.place(relx=0.9, rely=0.9, anchor='se')  # Position at bottom-right corner
-
-    # Create frames for buttons and content
+    # Frames must be created before the toggle function
     frame = tk.Frame(root, bg=FRAME_LIGHT_COLOR)
     frame.pack(side=tk.TOP, pady=20)
     
     panel = tk.Frame(root, bg=FRAME_LIGHT_COLOR)
     panel.pack(side=tk.TOP, pady=20)
 
-    # Create buttons and pass the panel for content display
-    create_buttons(frame, panel, switch_value)  # Pass switch_value
+    def apply_theme(widget, bg_color, fg_color):
+        """
+        Apply the background and foreground colors to the widget and all its children recursively.
+        """
+        # Apply background color
+        widget.config(bg=bg_color)
+
+        # Apply text color for widgets that support the 'fg' option
+        if isinstance(widget, (tk.Label, tk.Button, tk.Entry, tk.Text, tk.Checkbutton, tk.Radiobutton)):
+            widget.config(fg=fg_color)
+            
+            # Set additional options for Checkbutton and Radiobutton widgets
+            if isinstance(widget, (tk.Checkbutton, tk.Radiobutton)):
+                widget.config(selectcolor=bg_color, activeforeground=fg_color)
+
+        # Recursively set the colors for each child widget
+        for child in widget.winfo_children():
+            apply_theme(child, bg_color, fg_color)
+
+    def toggle():
+        nonlocal switch_value
+
+        if switch_value:
+            # Dark theme
+            switch.config(image=root.dark_image, bg=DARK_BG, activebackground=DARK_BG)
+            root.config(bg=DARK_BG)
+            apply_theme(panel, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
+            apply_theme(frame, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
+            switch_value = False
+        else:
+            # Light theme
+            switch.config(image=root.light_image, bg=LIGHT_BG, activebackground=LIGHT_BG)
+            root.config(bg=LIGHT_BG)
+            apply_theme(panel, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
+            apply_theme(frame, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
+            switch_value = True
+
+    # Use root.light_image as the initial image for the switch button
+    switch = tk.Button(root, image=root.light_image, bd=0, bg=LIGHT_BG, activebackground=LIGHT_BG, command=toggle)
+    switch.place(relx=0.9, rely=0.9, anchor='se')
+
+    # Pass switch_value to create_buttons
+    create_buttons(frame, panel, switch_value) 
 
     return root
-
-# Load Products
-def load_prod(conn):
-    """
-    Loads the list of products from the database for the logged-in user.
-
-    Args:
-        conn (sqlite3.Connection): SQLite connection object.
-
-    Returns:
-        list: A list of products from the database.
-    """
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM products WHERE user_id = ?", (logged_in_user_id,))
-    rows = cur.fetchall()
-
-    # Format the results into a list of dictionaries for easier usage in the GUI
-    products = []
-    for row in rows:
-        product = {
-            "Name": row[0],
-            "Quantity": row[1],
-            "Group": row[2],
-            "Exp": row[3],
-            "Add": row[4],
-            "User": logged_in_user_id,
-            "Info": {
-                "Vegetarian": row[6],
-                "Vegan": row[7],
-                "Gluten": row[8],
-                "Lactose": row[9],
-                "Eggs": row[10],
-                "Nuts": row[11],
-                "Halal": row[12],
-                "Kosher": row[13]
-            }
-        }
-        products.append(product)
-    
-    return products
 
 # Button Clicked
 def on_button_click(clicked_index, buttons, panel):
@@ -403,7 +357,7 @@ def on_button_click(clicked_index, buttons, panel):
     create_panel(clicked_index, panel)  # Call create_panel with the clicked index
 
 # Create the Buttons
-def create_buttons(frame, panel, switch_value):  
+def create_buttons(frame, panel, switch_value): 
     """
     Creates a set of buttons within a specified frame and assigns click functionality.
 
@@ -421,12 +375,15 @@ def create_buttons(frame, panel, switch_value):
     """
     buttons = []
     for i, text in enumerate(BUTTON_TEXTS):
-        btn = tk.Button(frame, text=text, height=HEIGHT, width=WIDTH,
+        # Set the button color based on the current theme
+        button_color = "lightgreen" if switch_value else "darkgreen" 
+        btn = tk.Button(frame, bg=button_color, text=text, height=HEIGHT, width=WIDTH,
                         command=lambda i=i: on_button_click(i, buttons, panel))
         btn.grid(row=1, column=i, sticky="s")
         buttons.append(btn)
-    
-    buttons[0].config(height=HEIGHT, width=WIDTH)  # Default Button
+
+    # Set the default button
+    buttons[0].config(height=HEIGHT, width=WIDTH)  
     return buttons
 
 # Button Panel
@@ -528,7 +485,47 @@ def validate_qty(qty):
         bool: True if the quantity is a positive integer, False otherwise.
     """
     return qty.isdigit() and int(qty) > 0
-        
+
+# Load Products
+def load_prod(conn):
+    """
+    Loads the list of products from the database for the logged-in user.
+
+    Args:
+        conn (sqlite3.Connection): SQLite connection object.
+
+    Returns:
+        list: A list of products from the database.
+    """
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products WHERE user_id = ?", (logged_in_user_id,))
+    rows = cur.fetchall()
+
+    # Format the results into a list of dictionaries for easier usage in the GUI
+    products = []
+    for row in rows:
+        product = {
+            "Name": row[0],
+            "Quantity": row[1],
+            "Group": row[2],
+            "Exp": row[3],
+            "Add": row[4],
+            "User": logged_in_user_id,
+            "Info": {
+                "Vegetarian": row[6],
+                "Vegan": row[7],
+                "Gluten": row[8],
+                "Lactose": row[9],
+                "Eggs": row[10],
+                "Nuts": row[11],
+                "Halal": row[12],
+                "Kosher": row[13]
+            }
+        }
+        products.append(product)
+    
+    return products
+
 # Add New Product
 def add_prod(panel):
     """
@@ -554,71 +551,73 @@ def add_prod(panel):
     Returns:
         None
     """
+    global root
+
     # Set up for the Add Panel
     sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
     sub_frame.pack(pady=20)
 
-    instructions = tk.Label(sub_frame, text="Fill in the information for the NEW product.")
+    instructions = tk.Label(sub_frame, text="Fill in the information for the NEW product.", bg=sub_frame.cget('bg'))
     instructions.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
     # Product Name Input
-    prod_name_label = tk.Label(sub_frame, text="Product Name:")
+    prod_name_label = tk.Label(sub_frame, text="Product Name:", bg=sub_frame.cget('bg'))
     prod_name_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
     prod_name_input = tk.Entry(sub_frame)
     prod_name_input.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
     prod_name_input.bind("<FocusOut>", lambda event, entry=prod_name_input: check_special_chars(entry))
 
     # Quantity Input
-    qty_label = tk.Label(sub_frame, text="Quantity:")
+    qty_label = tk.Label(sub_frame, text="Quantity:", bg=sub_frame.cget('bg'))
     qty_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
     qty_input = tk.Entry(sub_frame)
     qty_input.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
     # Food Group (Radio buttons)
-    group_label = tk.Label(sub_frame, text="Food Group:")
+    group_label = tk.Label(sub_frame, text="Food Group:", bg=sub_frame.cget('bg'))
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
-    var1 = tk.IntVar()
+    var1 = tk.IntVar(master=root)
     food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
-        radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
+        radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i, bg=sub_frame.cget('bg'), selectcolor="orange")
         radio.grid(row=3 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
     # Nutritional Information (Check buttons)
-    info_label = tk.Label(sub_frame, text="Nutritional Information:")
+    info_label = tk.Label(sub_frame, text="Nutritional Information:", bg=sub_frame.cget('bg'))
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
     nutrition_vars = {
-        "Vegetarian": tk.IntVar(),
-        "Vegan": tk.IntVar(),
-        "Gluten": tk.IntVar(),
-        "Lactose": tk.IntVar(),
-        "Eggs": tk.IntVar(),
-        "Nuts": tk.IntVar(),
-        "Halal": tk.IntVar(),
-        "Kosher": tk.IntVar()
+        "Vegetarian": tk.IntVar(master=root),
+        "Vegan": tk.IntVar(master=root),
+        "Gluten": tk.IntVar(master=root),
+        "Lactose": tk.IntVar(master=root),
+        "Eggs": tk.IntVar(master=root),
+        "Nuts": tk.IntVar(master=root),
+        "Halal": tk.IntVar(master=root),
+        "Kosher": tk.IntVar(master=root)
     }
 
     for i, (text, var) in enumerate(nutrition_vars.items(), start=1):
-        check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0)
+        check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0, bg=sub_frame.cget('bg'), selectcolor="orange")
         check.grid(row=6 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
     # Experation Date
-    exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):")
+    exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):", bg=sub_frame.cget('bg'))
     exp_date_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.E)
     exp_date_entry = tk.Entry(sub_frame)
     exp_date_entry.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
     exp_date_entry.bind("<FocusOut>", lambda event: format_date(exp_date_entry))
 
     # Date Added
-    add_date_label = tk.Label(sub_frame, text="Date Added (MM/DD/YY):")
+    add_date_label = tk.Label(sub_frame, text="Date Added (MM/DD/YY):", bg=sub_frame.cget('bg'))
     add_date_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.E)
     add_date_entry = tk.Entry(sub_frame)
     add_date_entry.grid(row=11, column=1, padx=5, pady=5, sticky=tk.W)
     add_date_entry.bind("<FocusOut>", lambda event: format_date(add_date_entry))
 
     # User Name Input
-    user_name_label = tk.Label(sub_frame, text="User Name:")
+    user_name_label = tk.Label(sub_frame, text="User Name:", bg=sub_frame.cget('bg'))
     user_name_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.E)
     user_name_input = tk.Entry(sub_frame)
     user_name_input.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
@@ -666,7 +665,7 @@ def add_prod(panel):
         messagebox.showinfo("Success", "Product added successfully!")
         sub_frame.destroy()
 
-    submit_btn = tk.Button(sub_frame, text="Submit", command=store)
+    submit_btn = tk.Button(sub_frame, text="Submit", command=store, fg="black")
     submit_btn.grid(row=13, column=1, padx=5, pady=5)
 
     return
@@ -719,7 +718,7 @@ def update_prod(panel):
             return
         
         selected_name = users_listbox.get(selection[0])  # Get the selected name
-        product = get_prod_data(selected_name, my_prod)
+        product = get_prod_data(selected_name, products)
         
         if product:
             # Populate the text field with the product's name
@@ -794,11 +793,11 @@ def update_prod(panel):
         messagebox.showinfo("Success", "Product updated successfully!")
 
     # Divide screen
-    main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL)
+    main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL, bg=panel.cget('bg'))
     main_pane.pack(fill=tk.BOTH, expand=True)
 
     # Left side = Product List
-    left_frame = tk.Frame(main_pane)
+    left_frame = tk.Frame(main_pane, bg=panel.cget('bg'))
     main_pane.add(left_frame, width=200)
 
     # "Click to Grab Produce" button
@@ -806,16 +805,16 @@ def update_prod(panel):
     grab_button.pack(pady=10, padx=10)
 
     # Screen to display the products
-    users_listbox = tk.Listbox(left_frame)
+    users_listbox = tk.Listbox(left_frame, bg="white", fg="black")
     users_listbox.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
     users_listbox.bind("<<ListboxSelect>>", on_select) 
 
     # Existing Product Information
-    for prod in my_prod:
+    for prod in products:
         users_listbox.insert(tk.END, str(prod["Name"]))
 
     # Right side = Product Information
-    right_frame = tk.Frame(main_pane)
+    right_frame = tk.Frame(main_pane, bg=panel.cget('bg'))
     main_pane.add(right_frame)
     
     sub_frame = tk.Frame(right_frame, bg=right_frame.cget('bg'))
@@ -838,7 +837,7 @@ def update_prod(panel):
     group_label = tk.Label(sub_frame, text="Food Group:")
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
-    var1 = tk.IntVar()
+    var1 = tk.IntVar(master=root)
     food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
         radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
@@ -848,7 +847,7 @@ def update_prod(panel):
     info_label = tk.Label(sub_frame, text="Nutritional Information:")
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
-    veg_var, vegan_var, gluten_var, lactose_var, eggs_var, nuts_var, halal_var, kosher_var = (tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar())
+    veg_var, vegan_var, gluten_var, lactose_var, eggs_var, nuts_var, halal_var, kosher_var = (tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root))
     check_vars = {
         "Vegetarian": veg_var,
         "Vegan": vegan_var,
@@ -894,7 +893,18 @@ def update_prod(panel):
 # Delete Existing Product
 def delete_prod(panel):
     """
-    Creates a GUI interface in the provided panel to search for and delete products from the SQLite database.
+    Creates a GUI interface in the provided panel to search for and delete products.
+
+    This function provides a form that allows users to search for products by name and delete them 
+    from the system. The product list is displayed in a listbox, and the user can search for a 
+    specific product by entering the name in the search bar. When a product is selected, the user 
+    can delete it after confirming the action. The product is removed from the JSON file that stores 
+    product data.
+
+    Key Features:
+    - A search bar to filter products by name.
+    - A listbox to display matching products.
+    - A delete button to remove the selected product, with confirmation dialogs for safety.
 
     Args:
         panel (Tkinter Frame): The frame where the form and product list will be displayed.
@@ -1043,7 +1053,6 @@ def search_prod(panel):
 
     result_text = tk.Text(bottom_frame, height=15, width=80)
     result_text.pack(pady=5)
-    return    
 
 # Open the HTML file in a web browser
 def open_html(file_path):
@@ -1153,6 +1162,10 @@ def main():
     Returns:
         None
     """
+    global root
+
+    global root
+
     # Checks if Agreement is true
     if not check_agreements():
         return
@@ -1163,16 +1176,6 @@ def main():
     create_users(conn)    # Ensure the table exists
     create_products(conn) # Ensure the table exists
 
-    # Create a frame for buttons and panel for content
-    frame = tk.Frame(root)
-    frame.pack(side=tk.TOP, pady=20)
-
-    panel = tk.Frame(root)
-    panel.pack(side=tk.TOP, pady=20)
-
-    # Create buttons and pass the panel for content display
-    create_buttons(frame, panel)
-
     # Start the Tkinter main loop
     root.mainloop()
 
@@ -1180,4 +1183,3 @@ def main():
 if __name__ == "__main__":
     login_window()
     main()
-
