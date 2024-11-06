@@ -81,7 +81,7 @@ def create_products(conn):
                             "group" INTEGER,
                             expiration DATE,
                             "add" DATE,
-                            user_id INTEGER,
+                            user_id TEXT,
                             vegetarian BOOLEAN,
                             vegan BOOLEAN,
                             gluten BOOLEAN,
