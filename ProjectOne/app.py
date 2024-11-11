@@ -34,6 +34,10 @@ import sys
 import sqlite3
 import sys
 import bcrypt
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import random
 
 # Constants
 HEIGHT = 3
@@ -100,7 +104,51 @@ def create_users(conn):
                             email TEXT NOT NULL UNIQUE,
                             username TEXT NOT NULL UNIQUE,
                             password_hash TEXT NOT NULL)''')
+'''
+# Generate a 6-digit random verification code        
+def generate_verification_code():
+    return str(random.randint(100000, 999999))
+        
+# Basic function to send an email -> CURRENTLY NOT WORKING
+def send_verification_email(receiver_email):
+    
+    receiver_email = "natinator711@gmail.com"
 
+    verification_code = send_verification_email(receiver_email)
+    if verification_code:
+        print(f"Generated Verification Code (for internal use): {verification_code}")
+    
+    sender_email = "foodconnect3@outlook.com"
+    password = "flkayeunradrigpn"
+    
+    # Generate a 6-digit verification code
+    verification_code = generate_verification_code()
+    
+    # Define the email subject and body
+    subject = "Your Verification Code"
+    body = f"Your verification code is: {verification_code}\nPlease enter this code to verify your identity."
+
+    # Create the email message
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+
+    # Attach the body to the email
+    message.attach(MIMEText(body, "plain"))
+
+    # Send the email using Outlook's SMTP server
+    try:
+        with smtplib.SMTP("smtp-mail.outlook.com", 587) as server:
+            server.starttls()  # Secure the connection
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+            print("Verification email sent successfully!")
+            return verification_code  # Return the code for verification purposes
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+'''
 # Class for handling products in the database
 class Product:
     def __init__(self, name, quantity, group, expiration, add, user, info=None):
@@ -1186,5 +1234,11 @@ def main():
 
 # Starting Point
 if __name__ == "__main__":
+    receiver_email = "natinator711@gmail.com"
+
+    verification_code = send_verification_email(receiver_email)
+    if verification_code:
+        print(f"Generated Verification Code (for internal use): {verification_code}")
+    
     login_window()
     main()
