@@ -970,39 +970,45 @@ def delete_prod(panel):
     def refresh_listbox():
         users_listbox.delete(0, tk.END)  # Clear the current listbox
         cur = conn.cursor()
-        cur.execute("SELECT name FROM products WHERE user_id = ?", (logged_in_user_id,))
+        cur.execute("SELECT name, expiration FROM products WHERE user_id = ?", (logged_in_user_id,))
         products = cur.fetchall()
 
         for product in products:
-            users_listbox.insert(tk.END, product[0])
+            # Display product name and expiration date in the listbox
+            display_text = f"{product[0]} {product[1]}"
+            users_listbox.insert(tk.END, display_text)
 
     # Function to find a product by name
     def find_by_name():
         search_query = search_entry.get().lower()
         users_listbox.delete(0, tk.END)
         cur = conn.cursor()
-        cur.execute("SELECT name FROM products WHERE name LIKE ? AND user_id = ?", ('%' + search_query + '%', logged_in_user_id))
+        cur.execute("SELECT name, expiration FROM products WHERE name LIKE ? AND user_id = ?", ('%' + search_query + '%', logged_in_user_id))
         results = cur.fetchall()
 
         for result in results:
-            users_listbox.insert(tk.END, result[0])
+            # Display product name and expiration date in the listbox
+            display_text = f"{result[0]} - Exp: {result[1]}"
+            users_listbox.insert(tk.END, display_text)
 
     # Function to remove the selected product
     def remove_selected():
-        selected_product = users_listbox.get(tk.ACTIVE)
-
-        if not selected_product:
+        selected_text = users_listbox.get(tk.ACTIVE)
+        if not selected_text:
             messagebox.showwarning("Selection Error", "No product selected!")
             return
 
+        # Extract the product name and expiration date from the selected text
+        selected_product, selected_expiration = selected_text.split(" ")
+        
         # Confirm deletion
-        response = messagebox.askyesno("Delete Confirmation", f"Are you sure you want to delete '{selected_product}'?")
+        response = messagebox.askyesno("Delete Confirmation", f"Are you sure you want to delete '{selected_product}' with expiration date '{selected_expiration}'?")
         if response:
             cur = conn.cursor()
-            cur.execute("DELETE FROM products WHERE name = ? AND user_id = ?", (selected_product, logged_in_user_id))
+            cur.execute("DELETE FROM products WHERE name = ? AND expiration = ? AND user_id = ?", (selected_product, selected_expiration, logged_in_user_id))
             conn.commit()
 
-            messagebox.showinfo("Success", f"Product '{selected_product}' deleted successfully!")
+            messagebox.showinfo("Success", f"Product '{selected_product}' with expiration date '{selected_expiration}' deleted successfully!")
             refresh_listbox()
 
     # Layout for delete
