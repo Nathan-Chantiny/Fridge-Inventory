@@ -23,6 +23,7 @@ Usage:
 
 import tkinter as tk
 import tkinter.messagebox as messagebox
+from itertools import product
 from tkinter import Label
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
@@ -34,10 +35,12 @@ import sys
 import sqlite3
 import sys
 import bcrypt
+import openai
 
 # Constants
 HEIGHT = 3
 WIDTH = 20
+openai.api_key = "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"
 
 # Checks if the script is running in a "frozen" state
 if getattr(sys, 'frozen', False):
@@ -381,6 +384,45 @@ def login_window():
 
     login_root.mainloop()
 
+def get_ingredients_from_db():
+    """Retrieve a list of ingredients from the fridge database"""
+    conn = connect_db()
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM products WHERE user_id = ?", (logged_in_user_id,))
+    rows = cur.fetchall()
+    return [row[0] for row in rows]
+
+def suggest_recipes(ingredients):
+    """Use ChatGPT to suggest recipes based on available ingredients"""
+    prompt = f"Here are the ingredients in my fridge: {', '.join(ingredients)}. Can you suggest some recipes?"
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message["content"]
+    except openai.error.RateLimitError:
+        return "API quota exceeded. Please try again later or check your usage limits."
+    except openai.error.OpenAIError as e:
+        return f"An error occurred: {e}"
+
+def show_recipe_suggestions(panel):
+    """Display recipe suggestions in the GUI"""
+    ingredients = get_ingredients_from_db()
+    recipes = suggest_recipes(ingredients)
+
+    # Clear panel
+    for widget in panel.winfo_children():
+        widget.destroy()
+
+    result_label = tk.Label(panel, text="Recipe Suggestions:")
+    result_label.pack()
+
+    result_text = tk.Text(panel, height=15, width=80)
+    result_text.insert(tk.END, recipes)
+    result_text.pack()
+
 # Main Window
 def main_window():
     """
@@ -395,7 +437,7 @@ def main_window():
     global root
     root = tk.Tk()
     root.title("FoodConnect")
-    root.geometry('600x800')
+    root.geometry('800x800')
     return root
 
 # Button Clicked
@@ -452,6 +494,7 @@ def create_buttons(frame, panel):
     buttons[0].config(height=HEIGHT, width=WIDTH)  # Default Button
     return buttons
 
+BUTTON_TEXTS.append("RECIPE SUGGESTIONS")
 # Button Panel
 def create_panel(index, panel):
     """
@@ -480,8 +523,10 @@ def create_panel(index, panel):
         update_prod(panel)
     elif index == 2:    # Delete existing product
         delete_prod(panel)
-    else:               # Search for product
+    elif index == 3:               # Search for product
         search_prod(panel)
+    else:
+        show_recipe_suggestions(panel)
 
 # Check for Special Characters
 def check_special_chars(entry):
