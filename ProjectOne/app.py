@@ -35,12 +35,13 @@ import sys
 import sqlite3
 import sys
 import bcrypt
-import openai
+import google.generativeai as genai
 
 # Constants
 HEIGHT = 3
 WIDTH = 20
-openai.api_key = "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"
+genai.configure(api_key="AIzaSyDWt5mSeJpWAruI4UEjyMn616BDqvm6CsE")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Checks if the script is running in a "frozen" state
 if getattr(sys, 'frozen', False):
@@ -396,16 +397,10 @@ def suggest_recipes(ingredients):
     """Use ChatGPT to suggest recipes based on available ingredients"""
     prompt = f"Here are the ingredients in my fridge: {', '.join(ingredients)}. Can you suggest some recipes?"
 
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message["content"]
-    except openai.error.RateLimitError:
-        return "API quota exceeded. Please try again later or check your usage limits."
-    except openai.error.OpenAIError as e:
-        return f"An error occurred: {e}"
+
+    response = model.generate_content(prompt)
+
+    return(response.text)
 
 def show_recipe_suggestions(panel):
     """Display recipe suggestions in the GUI"""
@@ -419,7 +414,7 @@ def show_recipe_suggestions(panel):
     result_label = tk.Label(panel, text="Recipe Suggestions:")
     result_label.pack()
 
-    result_text = tk.Text(panel, height=15, width=80)
+    result_text = tk.Text(panel, height=30, width=90)
     result_text.insert(tk.END, recipes)
     result_text.pack()
 
