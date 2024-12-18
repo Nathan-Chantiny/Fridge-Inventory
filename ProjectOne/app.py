@@ -33,18 +33,29 @@ import sys
 import sqlite3
 import sys
 import bcrypt
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import pyotp
+import time
 
 # Constants
 HEIGHT = 3
 WIDTH = 20
 
 # Colors
-LIGHT_BG = "alice blue"  # Light mode color for root, frames, etc.
-DARK_BG = "gray20"      # Dark mode color for root, frames, etc.
-FRAME_LIGHT_COLOR = "white"  # Light mode color for frames
-FRAME_DARK_COLOR = "gray15"     # Dark mode color for frames
-TEXT_LIGHT_COLOR = "black"  # Text color for light theme
-TEXT_DARK_COLOR = "dodger blue"  # Text color for dark theme
+LIGHT_BG = "alice blue"      # Light mode color for root, frames, etc.
+DARK_BG = "gray20"           # Dark mode color for root, frames, etc.
+MID_BG = "purple4"           # Mid mode color for root, frames, etc.
+FOREST_BG = "forestgreen" # Forest mode color for root, frames, etc.
+FRAME_LIGHT_COLOR = "white"         # Light mode color for frames
+FRAME_DARK_COLOR = "gray15"         # Dark mode color for frames
+FRAME_MID_COLOR = "indigo"          # Mid mode color for frames
+FRAME_FOREST_COLOR = "limegreen"  # Forest mode color for frames
+TEXT_LIGHT_COLOR = "black"        # Text color for light theme
+TEXT_DARK_COLOR = "dodger blue"   # Text color for dark theme
+TEXT_MID_COLOR = "magenta"        # Text color for mid theme
+TEXT_FOREST_COLOR = "darkgreen"  # Text color for forest theme
 
 # Checks if the script is running in a "frozen" state
 if getattr(sys, 'frozen', False):
@@ -63,6 +74,11 @@ EULA_AGREEMENT = os.path.join(CURRENT_DIR, "EULA.html")
 PRIVACY_POLICY = os.path.join(CURRENT_DIR, "Privacy_Policy.html")
 TERMS_CONDITIONS = os.path.join(CURRENT_DIR, "Terms_Conditions.html")
 VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
+
+# 2FA key
+key = "FoodConnectAuthenticationKey"
+totp = pyotp.TOTP(key, interval=60)
+
 
 # Userid to identify user currently active
 global logged_in_user_id
@@ -100,11 +116,15 @@ def create_products(conn):
 # Function to create a 'users' table if it doesn't already exist        
 def create_users(conn):
     with conn:
-        conn.execute('''CREATE TABLE IF NOT EXISTS users (
-                            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            email TEXT NOT NULL UNIQUE,
-                            username TEXT NOT NULL UNIQUE,
-                            password_hash TEXT NOT NULL)''')
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                username TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                first_login BOOLEAN DEFAULT 1
+            );
+        """)
 
 # Class for handling products in the database
 class Product:
@@ -181,6 +201,74 @@ class Product:
         cur.execute("SELECT * FROM products WHERE name LIKE ?", ('%' + search_term + '%',))
         rows = cur.fetchall()
         return rows
+    
+# Send 2FA code to the user's email
+def send_2fa_email(email, code):
+    sender_email = "foodconnect3@gmail.com"
+    sender_password = "sokx umec amfv fdhe"
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+
+    subject = "Your FoodConnect 2FA Code"
+    body = f"Your 2FA code is: {code}. It is valid for 60 seconds."
+
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = email
+    msg["Subject"] = subject
+    
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, email, msg.as_string())
+    except Exception:
+        return 
+
+# 2FA verification screen
+# 2FA verification screen
+def two_factor_window(user_email):
+    def send_code():
+        nonlocal start_time
+        start_time = time.time()
+        code = totp.now()
+        send_2fa_email(user_email, code)
+        messagebox.showinfo("Info", "A new 2FA code has been sent to your email.")
+
+    # Initialize start_time when the window opens
+    start_time = time.time()
+    send_code()  # Send the initial code
+
+    def verify_code():
+        entered_code = code_entry.get()
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 60:
+            messagebox.showerror("Error", "The code has expired. Please resend the code.")
+        elif totp.verify(entered_code):
+            messagebox.showinfo("Success", "2FA verification successful!")
+            two_fa_root.destroy()
+            main()  # Proceed to the main application
+        else:
+            messagebox.showerror("Error", "Invalid 2FA code.")
+
+    two_fa_root = tk.Tk()
+    two_fa_root.title("2FA Verification")
+    two_fa_root.geometry("300x200")
+
+    tk.Label(two_fa_root, text="Enter the 2FA code sent to your email:").pack(pady=10)
+    code_entry = tk.Entry(two_fa_root)
+    code_entry.pack(pady=5)
+
+    verify_button = tk.Button(two_fa_root, text="Verify", command=verify_code)
+    verify_button.pack(pady=10)
+
+    resend_button = tk.Button(two_fa_root, text="Resend Code", command=send_code)
+    resend_button.pack(pady=5)
+
+    two_fa_root.mainloop()
+
 
 # Simple login screen
 def login_window():
@@ -221,6 +309,42 @@ def login_window():
     status_label = tk.Label(login_root, text="")
     status_label.pack(pady=5)
 
+    def send_feedback_email(user_email):
+        # Configure your email settings
+        sender_email = "foodconnect3@gmail.com"
+        sender_password = "sokx umec amfv fdhe"  
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        
+        # Prepare the email
+        subject = "How's your experience with FoodConnect?"
+        body = """
+        Hello,
+        We noticed that you've just signed into FoodConnect for the first time. 
+        We would love to know how your experience has been so far and if there's anything we can improve.
+        Please reply to this email.
+
+        Thanks for using FoodConnect!
+        
+        Best regards,
+        FoodConnect Team """
+
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = user_email
+        msg["Subject"] = subject
+
+        msg.attach(MIMEText(body, "plain"))
+
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()  
+                server.login(sender_email, sender_password)
+                text = msg.as_string()
+                server.sendmail(sender_email, user_email, text)
+        except Exception:
+            return
+
     # Function to handle login
     def login():
         username = username_entry.get()
@@ -228,17 +352,26 @@ def login_window():
 
         conn = connect_db()
         cur = conn.cursor()
-        cur.execute("SELECT password_hash, user_id FROM users WHERE username = ?", (username,))
+        cur.execute("SELECT password_hash, user_id, email, first_login FROM users WHERE username = ?", (username,))
         row = cur.fetchone()
 
         if row and bcrypt.checkpw(password.encode(), row[0]):
             global logged_in_user_id
             logged_in_user_id = row[1]  # Store the logged-in user's ID
+            
+            if row[3]:  # Check if first_login is True (1)
+                send_feedback_email(row[2])  # Send feedback email
+                cur.execute("UPDATE users SET first_login = 0 WHERE user_id = ?", (logged_in_user_id,))
+                conn.commit()
+
             status_label.config(text="Login successful!", fg="green")
             login_root.after(1000, login_root.destroy)  # Close login window after success
+            user_email = row[2]
+            two_factor_window(user_email)
             main()  # Launch the main app after successful login
         else:
             status_label.config(text="Invalid username or password", fg="red")
+
 
     # Function to handle sign-up
     def sign_up():
@@ -276,7 +409,10 @@ def login_window():
                     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
                     # Insert the new user into the database
-                    cur.execute("INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)", (email, username, hashed_password))
+                    cur.execute(
+                        "INSERT INTO users (email, username, password_hash, first_login) VALUES (?, ?, ?, 1)",
+                        (email, username, hashed_password)
+                    )
                     conn.commit()
 
                     messagebox.showinfo("Success!", "Account created successfully!")
@@ -350,12 +486,16 @@ def main_window(conn):
 
     light = Image.open(os.path.join(CURRENT_DIR, "light.png"))
     dark = Image.open(os.path.join(CURRENT_DIR, "dark.png"))
+    mid = Image.open(os.path.join(CURRENT_DIR, "star.png"))
+    forest = Image.open(os.path.join(CURRENT_DIR, "forest.png"))
     bell = Image.open(os.path.join(CURRENT_DIR, "bell.png"))
     root.light_image = ImageTk.PhotoImage(light, master=root)
     root.dark_image = ImageTk.PhotoImage(dark, master=root)
+    root.mid_image = ImageTk.PhotoImage(mid, master=root)
+    root.forest_image = ImageTk.PhotoImage(forest, master=root)
     root.notify_image = ImageTk.PhotoImage(bell, master=root)
 
-    switch_value = True
+    switch_value = 0
 
     # Frames must be created before the toggle function
     frame = tk.Frame(root, bg=FRAME_LIGHT_COLOR)
@@ -376,24 +516,41 @@ def main_window(conn):
         for child in widget.winfo_children():
             apply_theme(child, bg_color, fg_color)
 
-    def toggle():
+    def toggle(): 
         nonlocal switch_value
 
         # Dark theme
-        if switch_value:
+        if switch_value == 0:
             switch.config(image=root.dark_image, bg=DARK_BG, activebackground=DARK_BG)
             root.config(bg=DARK_BG)
             apply_theme(panel, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
             apply_theme(frame, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
-            switch_value = False
+            switch_value = 1
+
+        # Mid theme
+        elif switch_value == 1:
+            switch.config(image=root.mid_image, bg=MID_BG, activebackground=MID_BG)
+            root.config(bg=MID_BG)
+            apply_theme(panel, FRAME_MID_COLOR, TEXT_MID_COLOR)
+            apply_theme(frame, FRAME_MID_COLOR, TEXT_MID_COLOR)
+            switch_value = 2
+
+        # Forest theme
+        elif switch_value == 2:
+            switch.config(image=root.forest_image, bg=FOREST_BG, activebackground=FOREST_BG)
+            root.config(bg=FOREST_BG)
+            apply_theme(panel, FRAME_FOREST_COLOR, TEXT_FOREST_COLOR)
+            apply_theme(frame, FRAME_FOREST_COLOR, TEXT_FOREST_COLOR)
+            switch_value = 3
 
         # Light theme
-        else:
+        elif switch_value == 3:
             switch.config(image=root.light_image, bg=LIGHT_BG, activebackground=LIGHT_BG)
             root.config(bg=LIGHT_BG)
             apply_theme(panel, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
             apply_theme(frame, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
-            switch_value = True
+            switch_value = 0
+
 
     # Low Stock Check Button
     stock_button = tk.Button(
@@ -621,17 +778,11 @@ def load_prod(conn):
     return products
 
 def check_stock(conn):
-    """
-    Check for products with quantity <= 3 and display a warning notification.
-    """
     cur = conn.cursor()
     
     # Get today's date and calculate the date 10 days from now
     today = date.today()
     ten_days_later = today + timedelta(days=10)
-    
-    print(f"Today's date: {today}")
-    print(f"10 days later: {ten_days_later}")
     
     # Check for products with low stock (quantity <= 3)
     cur.execute("SELECT name, quantity FROM products WHERE quantity <= 3")
@@ -1100,8 +1251,8 @@ def delete_prod(panel):
         products = cur.fetchall()
 
         for product in products:
-            # Display product name and expiration date in the listbox
-            display_text = f"{product[0]} {product[1]}"
+            # Use a clear delimiter (e.g., '|') for display
+            display_text = f"{product[0]} | {product[1]}"
             users_listbox.insert(tk.END, display_text)
 
     # Function to find a product by name
@@ -1109,12 +1260,12 @@ def delete_prod(panel):
         search_query = search_entry.get().lower()
         users_listbox.delete(0, tk.END)
         cur = conn.cursor()
-        cur.execute("SELECT name, expiration FROM products WHERE name LIKE ?", ('%' + search_query))
+        cur.execute("SELECT name, expiration FROM products WHERE name LIKE ?", ('%' + search_query + '%',))
         results = cur.fetchall()
 
         for result in results:
             # Display product name and expiration date in the listbox
-            display_text = f"{result[0]} - Exp: {result[1]}"
+            display_text = f"{result[0]} | {result[1]}"
             users_listbox.insert(tk.END, display_text)
 
     # Function to remove the selected product
@@ -1125,10 +1276,17 @@ def delete_prod(panel):
             return
 
         # Extract the product name and expiration date from the selected text
-        selected_product, selected_expiration = selected_text.split(" ")
-        
+        try:
+            selected_product, selected_expiration = selected_text.split(" | ")
+        except ValueError:
+            messagebox.showerror("Parsing Error", "Could not parse the selected product. Please try again.")
+            return
+
         # Confirm deletion
-        response = messagebox.askyesno("Delete Confirmation", f"Are you sure you want to delete '{selected_product}' with expiration date '{selected_expiration}'?")
+        response = messagebox.askyesno(
+            "Delete Confirmation",
+            f"Are you sure you want to delete '{selected_product}' with expiration date '{selected_expiration}'?"
+        )
         if response:
             cur = conn.cursor()
             cur.execute("DELETE FROM products WHERE name = ? AND expiration = ?", (selected_product, selected_expiration))
