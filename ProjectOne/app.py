@@ -23,25 +23,44 @@ Usage:
 
 import tkinter as tk
 import tkinter.messagebox as messagebox
-from itertools import product
 from tkinter import Label
-from tkinter import PhotoImage
 from PIL import Image, ImageTk
+from datetime import date, timedelta
 import webbrowser
 import os
-import json
 import re
 import sys
 import sqlite3
 import sys
 import bcrypt
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import pyotp
+import time
 import google.generativeai as genai
 
 # Constants
 HEIGHT = 3
 WIDTH = 20
+
+# AI Generator
 genai.configure(api_key="AIzaSyDWt5mSeJpWAruI4UEjyMn616BDqvm6CsE")
 model = genai.GenerativeModel("gemini-1.5-flash")
+
+# Colors
+LIGHT_BG = "alice blue"      # Light mode color for root, frames, etc.
+DARK_BG = "gray20"           # Dark mode color for root, frames, etc.
+MID_BG = "purple4"           # Mid mode color for root, frames, etc.
+FOREST_BG = "forestgreen" # Forest mode color for root, frames, etc.
+FRAME_LIGHT_COLOR = "white"         # Light mode color for frames
+FRAME_DARK_COLOR = "gray15"         # Dark mode color for frames
+FRAME_MID_COLOR = "indigo"          # Mid mode color for frames
+FRAME_FOREST_COLOR = "limegreen"  # Forest mode color for frames
+TEXT_LIGHT_COLOR = "black"        # Text color for light theme
+TEXT_DARK_COLOR = "dodger blue"   # Text color for dark theme
+TEXT_MID_COLOR = "magenta"        # Text color for mid theme
+TEXT_FOREST_COLOR = "darkgreen"  # Text color for forest theme
 
 # Checks if the script is running in a "frozen" state
 if getattr(sys, 'frozen', False):
@@ -55,14 +74,16 @@ BUTTON_TEXTS = ["ADD", "UPDATE", "DELETE", "SEARCH"]
 # Ensure you have a list of food groups
 food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
 
-# JSON Path
-PROD_JSON = os.path.join(CURRENT_DIR, "fridge_products_full.json")
-
 # User Agreement Path
 EULA_AGREEMENT = os.path.join(CURRENT_DIR, "EULA.html")
 PRIVACY_POLICY = os.path.join(CURRENT_DIR, "Privacy_Policy.html")
 TERMS_CONDITIONS = os.path.join(CURRENT_DIR, "Terms_Conditions.html")
 VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
+
+# 2FA key
+key = "FoodConnectAuthenticationKey"
+totp = pyotp.TOTP(key, interval=60)
+
 
 # Userid to identify user currently active
 global logged_in_user_id
@@ -97,68 +118,18 @@ def create_products(conn):
                             kosher BOOLEAN,
                             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE)''')
 
-# Function to fill products table
-def fill_products(conn):
-    with conn:
-        conn.execute('''INSERT INTO products (name, quantity, "group", expiration, "add", user_id, vegetarian, vegan, gluten, lactose, eggs, nuts, halal, kosher) VALUES
-                    ('Eggs', 3, 5, '2024/10/22', '2024/09/24', '1', 0, 0, 0, 0, 1, 0, 0, 0),
-                    ('Cheese', 4, 1, '2024/10/01', '2024/09/24', '1', 0, 0, 0, 1, 0, 0, 0, 0),
-                    ('Butter', 3, 1, '2025/02/24', '2024/09/24', '1', 0, 0, 0, 1, 0, 0, 0, 0),
-                    ('Yogurt', 6, 1, '2024/10/01', '2024/09/24', '1', 1, 0, 0, 1, 0, 0, 0, 0),
-                    ('Lettuce', 8, 3, '2024/10/04', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Carrots', 9, 3, '2024/10/15', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Tomatoes', 1, 3, '2024/09/29', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Apples', 8, 2, '2024/10/01', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Oranges', 4, 2, '2024/10/01', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Chicken', 3, 5, '2024/09/26', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 1, 1),
-                    ('Beef', 2, 5, '2024/09/27', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 1, 1),
-                    ('Pork', 10, 5, '2024/09/26', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 0, 0),
-                    ('Tofu', 8, 5, '2024/10/01', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Almonds', 9, 4, '2026/09/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 1, 0, 0),
-                    ('Peanut Butter', 4, 5, '2025/03/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 1, 0, 0),
-                    ('Orange Juice', 2, 6, '2024/10/02', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Soda', 3, 6, '2025/06/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Spinach', 6, 3, '2024/10/01', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Broccoli', 1, 3, '2024/09/29', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Cucumber', 6, 3, '2024/10/08', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Bread', 10, 4, '2024/09/26', '2024/09/24', '1', 1, 1, 1, 0, 1, 0, 0, 0),
-                    ('Jam', 5, 2, '2025/04/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Hummus', 2, 4, '2024/11/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 1, 1, 1),
-                    ('Olives', 4, 3, '2026/09/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Pickles', 3, 3, '2024/12/07', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Pasta', 6, 4, '2026/09/24', '2024/09/24', '1', 1, 1, 1, 0, 0, 0, 0, 0),
-                    ('Rice', 3, 4, '2026/09/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Mushrooms', 8, 3, '2024/10/04', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Bell Peppers', 10, 3, '2026/09/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Salmon', 2, 5, '2024/09/28', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 0, 0),
-                    ('Tuna', 7, 5, '2029/09/24', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 0, 0),
-                    ('Shrimp', 5, 5, '2024/12/24', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 0, 0),
-                    ('Sausage', 2, 5, '2024/09/28', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 0, 0),
-                    ('Bacon', 5, 5, '2024/10/01', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 0, 0),
-                    ('Frozen Pizza', 6, 6, '2026/03/24', '2024/09/24', '1', 0, 0, 0, 0, 0, 0, 0, 0),
-                    ('Ice Cream', 8, 1, '2024/11/05', '2024/09/24', '1', 1, 0, 0, 1, 1, 1, 0, 0),
-                    ('Nut Butter', 8, 5, '2024/11/24', '2024/09/24', '1', 0, 1, 0, 1, 0, 1, 1, 1),
-                    ('Mayonnaise', 3, 1, '2024/10/24', '2024/09/24', '1', 0, 0, 0, 1, 0, 0, 0, 0),
-                    ('Mustard', 4, 6, '2025/09/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Ketchup', 2, 6, '2025/03/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Soy Sauce', 6, 6, '2025/03/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Grapes', 4, 2, '2024/10/08', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Bananas', 6, 2, '2024/09/29', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Potatoes', 7, 3, '2024/11/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Onions', 3, 3, '2024/12/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Garlic', 10, 3, '2025/03/24', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Peas', 5, 3, '2024/09/27', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Corn', 10, 3, '2024/09/27', '2024/09/24', '1', 1, 1, 0, 0, 0, 0, 0, 0),
-                    ('Snap Peas', 7, 3, '2024/10/02', '2024/09/29', '1', 1, 1, 0, 0, 0, 0, 1, 1);''')
-
 # Function to create a 'users' table if it doesn't already exist        
 def create_users(conn):
     with conn:
-        conn.execute('''CREATE TABLE IF NOT EXISTS users (
-                            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            email TEXT NOT NULL UNIQUE,
-                            username TEXT NOT NULL UNIQUE,
-                            password_hash TEXT NOT NULL)''')
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                username TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                first_login BOOLEAN DEFAULT 1
+            );
+        """)
 
 # Class for handling products in the database
 class Product:
@@ -235,6 +206,72 @@ class Product:
         cur.execute("SELECT * FROM products WHERE name LIKE ?", ('%' + search_term + '%',))
         rows = cur.fetchall()
         return rows
+    
+# Send 2FA code to the user's email
+def send_2fa_email(email, code):
+    sender_email = "foodconnect3@gmail.com"
+    sender_password = "sokx umec amfv fdhe"
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+
+    subject = "Your FoodConnect 2FA Code"
+    body = f"Your 2FA code is: {code}. It is valid for 60 seconds."
+
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = email
+    msg["Subject"] = subject
+    
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, email, msg.as_string())
+    except Exception:
+        return 
+
+# 2FA verification screen
+def two_factor_window(user_email):
+    def send_code():
+        nonlocal start_time
+        start_time = time.time()
+        code = totp.now()
+        send_2fa_email(user_email, code)
+        messagebox.showinfo("Info", "A new 2FA code has been sent to your email.")
+
+    # Initialize start_time when the window opens
+    start_time = time.time()
+    send_code()  # Send the initial code
+
+    def verify_code():
+        entered_code = code_entry.get()
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 60:
+            messagebox.showerror("Error", "The code has expired. Please resend the code.")
+        elif totp.verify(entered_code):
+            messagebox.showinfo("Success", "2FA verification successful!")
+            two_fa_root.destroy()
+            main()  # Proceed to the main application
+        else:
+            messagebox.showerror("Error", "Invalid 2FA code.")
+
+    two_fa_root = tk.Tk()
+    two_fa_root.title("2FA Verification")
+    two_fa_root.geometry("300x200")
+
+    tk.Label(two_fa_root, text="Enter the 2FA code sent to your email:").pack(pady=10)
+    code_entry = tk.Entry(two_fa_root)
+    code_entry.pack(pady=5)
+
+    verify_button = tk.Button(two_fa_root, text="Verify", command=verify_code)
+    verify_button.pack(pady=10)
+
+    resend_button = tk.Button(two_fa_root, text="Resend Code", command=send_code)
+    resend_button.pack(pady=5)
+
+    two_fa_root.mainloop()
 
 # Simple login screen
 def login_window():
@@ -275,6 +312,42 @@ def login_window():
     status_label = tk.Label(login_root, text="")
     status_label.pack(pady=5)
 
+    def send_feedback_email(user_email):
+        # Configure your email settings
+        sender_email = "foodconnect3@gmail.com"
+        sender_password = "sokx umec amfv fdhe"  
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        
+        # Prepare the email
+        subject = "How's your experience with FoodConnect?"
+        body = """
+        Hello,
+        We noticed that you've just signed into FoodConnect for the first time. 
+        We would love to know how your experience has been so far and if there's anything we can improve.
+        Please reply to this email.
+
+        Thanks for using FoodConnect!
+        
+        Best regards,
+        FoodConnect Team """
+
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = user_email
+        msg["Subject"] = subject
+
+        msg.attach(MIMEText(body, "plain"))
+
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()  
+                server.login(sender_email, sender_password)
+                text = msg.as_string()
+                server.sendmail(sender_email, user_email, text)
+        except Exception:
+            return
+
     # Function to handle login
     def login():
         username = username_entry.get()
@@ -282,17 +355,26 @@ def login_window():
 
         conn = connect_db()
         cur = conn.cursor()
-        cur.execute("SELECT password_hash, user_id FROM users WHERE username = ?", (username,))
+        cur.execute("SELECT password_hash, user_id, email, first_login FROM users WHERE username = ?", (username,))
         row = cur.fetchone()
 
         if row and bcrypt.checkpw(password.encode(), row[0]):
             global logged_in_user_id
             logged_in_user_id = row[1]  # Store the logged-in user's ID
+            
+            if row[3]:  # Check if first_login is True (1)
+                send_feedback_email(row[2])  # Send feedback email
+                cur.execute("UPDATE users SET first_login = 0 WHERE user_id = ?", (logged_in_user_id,))
+                conn.commit()
+
             status_label.config(text="Login successful!", fg="green")
             login_root.after(1000, login_root.destroy)  # Close login window after success
+            user_email = row[2]
+            two_factor_window(user_email)
             main()  # Launch the main app after successful login
         else:
             status_label.config(text="Invalid username or password", fg="red")
+
 
     # Function to handle sign-up
     def sign_up():
@@ -330,7 +412,10 @@ def login_window():
                     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
                     # Insert the new user into the database
-                    cur.execute("INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)", (email, username, hashed_password))
+                    cur.execute(
+                        "INSERT INTO users (email, username, password_hash, first_login) VALUES (?, ?, ?, 1)",
+                        (email, username, hashed_password)
+                    )
                     conn.commit()
 
                     messagebox.showinfo("Success!", "Account created successfully!")
@@ -385,6 +470,7 @@ def login_window():
 
     login_root.mainloop()
 
+# Fetches Products from Database
 def get_ingredients_from_db():
     """Retrieve a list of ingredients from the fridge database"""
     conn = connect_db()
@@ -393,15 +479,14 @@ def get_ingredients_from_db():
     rows = cur.fetchall()
     return [row[0] for row in rows]
 
+# Use AI to Generate Recipes
 def suggest_recipes(ingredients):
     """Use ChatGPT to suggest recipes based on available ingredients"""
     prompt = f"Here are the ingredients in my fridge: {', '.join(ingredients)}. Can you suggest some recipes?"
-
-
     response = model.generate_content(prompt)
+    return response.text
 
-    return(response.text)
-
+# Display Recipes
 def show_recipe_suggestions(panel):
     """Display recipe suggestions in the GUI"""
     ingredients = get_ingredients_from_db()
@@ -411,15 +496,15 @@ def show_recipe_suggestions(panel):
     for widget in panel.winfo_children():
         widget.destroy()
 
-    result_label = tk.Label(panel, text="Recipe Suggestions:")
-    result_label.pack()
+    result_label = tk.Label(panel, text="Recipe Suggestions:", bg="lightblue", font=("Arial", 14, "bold"))
+    result_label.pack(pady=10)
 
-    result_text = tk.Text(panel, height=30, width=90)
+    result_text = tk.Text(panel, height=30, width=90, bg="lightyellow", font=("Arial", 12))
     result_text.insert(tk.END, recipes)
-    result_text.pack()
+    result_text.pack(padx=10, pady=10)
 
 # Main Window
-def main_window():
+def main_window(conn):
     """
     Initializes and configures the main window for the Tkinter application.
 
@@ -432,7 +517,102 @@ def main_window():
     global root
     root = tk.Tk()
     root.title("FoodConnect")
-    root.geometry('800x800')
+    root.geometry('900x800')
+    root.config(bg=LIGHT_BG)
+
+    light = Image.open(os.path.join(CURRENT_DIR, "light.png"))
+    dark = Image.open(os.path.join(CURRENT_DIR, "dark.png"))
+    mid = Image.open(os.path.join(CURRENT_DIR, "star.png"))
+    forest = Image.open(os.path.join(CURRENT_DIR, "forest.png"))
+    bell = Image.open(os.path.join(CURRENT_DIR, "bell.png"))
+    root.light_image = ImageTk.PhotoImage(light, master=root)
+    root.dark_image = ImageTk.PhotoImage(dark, master=root)
+    root.mid_image = ImageTk.PhotoImage(mid, master=root)
+    root.forest_image = ImageTk.PhotoImage(forest, master=root)
+    root.notify_image = ImageTk.PhotoImage(bell, master=root)
+
+    switch_value = 0
+
+    # Frames must be created before the toggle function
+    frame = tk.Frame(root, bg=FRAME_LIGHT_COLOR)
+    frame.pack(side=tk.TOP, pady=20)
+    
+    panel = tk.Frame(root, bg=FRAME_LIGHT_COLOR)
+    panel.pack(side=tk.TOP, pady=20)
+
+    def apply_theme(widget, bg_color, fg_color):
+        widget.config(bg=bg_color)
+        if isinstance(widget, (tk.Label, tk.Button, tk.Entry, tk.Text, tk.Checkbutton, tk.Radiobutton)):
+            widget.config(fg=fg_color)
+            if isinstance(widget, (tk.Checkbutton, tk.Radiobutton)):
+                widget.config(selectcolor=bg_color, activeforeground=fg_color)
+        elif isinstance(widget, tk.Listbox):
+            widget.config(bg=bg_color, fg=fg_color)
+
+        for child in widget.winfo_children():
+            apply_theme(child, bg_color, fg_color)
+
+    def toggle(): 
+        nonlocal switch_value
+
+        # Dark theme
+        if switch_value == 0:
+            switch.config(image=root.dark_image, bg=DARK_BG, activebackground=DARK_BG)
+            root.config(bg=DARK_BG)
+            apply_theme(panel, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
+            apply_theme(frame, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
+            switch_value = 1
+
+        # Mid theme
+        elif switch_value == 1:
+            switch.config(image=root.mid_image, bg=MID_BG, activebackground=MID_BG)
+            root.config(bg=MID_BG)
+            apply_theme(panel, FRAME_MID_COLOR, TEXT_MID_COLOR)
+            apply_theme(frame, FRAME_MID_COLOR, TEXT_MID_COLOR)
+            switch_value = 2
+
+        # Forest theme
+        elif switch_value == 2:
+            switch.config(image=root.forest_image, bg=FOREST_BG, activebackground=FOREST_BG)
+            root.config(bg=FOREST_BG)
+            apply_theme(panel, FRAME_FOREST_COLOR, TEXT_FOREST_COLOR)
+            apply_theme(frame, FRAME_FOREST_COLOR, TEXT_FOREST_COLOR)
+            switch_value = 3
+
+        # Light theme
+        elif switch_value == 3:
+            switch.config(image=root.light_image, bg=LIGHT_BG, activebackground=LIGHT_BG)
+            root.config(bg=LIGHT_BG)
+            apply_theme(panel, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
+            apply_theme(frame, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
+            switch_value = 0
+
+
+    # Low Stock Check Button
+    stock_button = tk.Button(
+        root, 
+        image=root.notify_image, 
+        bd=0, 
+        bg=LIGHT_BG, 
+        activebackground=LIGHT_BG, 
+        command=lambda: (check_stock(conn))  
+    )
+    stock_button.place(relx=0.85, rely=0.95, anchor='se')
+
+    # Switch Button (for light/dark mode)
+    switch = tk.Button(
+        root, 
+        image=root.light_image, 
+        bd=0, 
+        bg=LIGHT_BG, 
+        activebackground=LIGHT_BG, 
+        command=toggle 
+    )
+    switch.place(relx=0.92, rely=0.95, anchor='se')
+
+    # Pass switch_value to create_buttons
+    create_buttons(frame, panel, switch_value)
+
     return root
 
 # Button Clicked
@@ -464,7 +644,7 @@ def on_button_click(clicked_index, buttons, panel):
     create_panel(clicked_index, panel)  # Call create_panel with the clicked index
 
 # Create the Buttons
-def create_buttons(frame, panel):
+def create_buttons(frame, panel, switch_value): 
     """
     Creates a set of buttons within a specified frame and assigns click functionality.
 
@@ -482,11 +662,15 @@ def create_buttons(frame, panel):
     """
     buttons = []
     for i, text in enumerate(BUTTON_TEXTS):
-        btn = tk.Button(frame, text=text, height=HEIGHT, width=WIDTH,
+        # Set the button color based on the current theme
+        button_color = "lightgreen" if switch_value else "darkgreen" 
+        btn = tk.Button(frame, bg=button_color, text=text, height=HEIGHT, width=WIDTH,
                         command=lambda i=i: on_button_click(i, buttons, panel))
         btn.grid(row=1, column=i, sticky="s")
         buttons.append(btn)
-    buttons[0].config(height=HEIGHT, width=WIDTH)  # Default Button
+
+    # Set the default button
+    buttons[0].config(height=HEIGHT, width=WIDTH)  
     return buttons
 
 BUTTON_TEXTS.append("RECIPE SUGGESTIONS")
@@ -518,9 +702,9 @@ def create_panel(index, panel):
         update_prod(panel)
     elif index == 2:    # Delete existing product
         delete_prod(panel)
-    elif index == 3:               # Search for product
+    elif index == 3:    # Search for product
         search_prod(panel)
-    else:
+    else:               # Provide AI recipes
         show_recipe_suggestions(panel)
 
 # Check for Special Characters
@@ -604,7 +788,7 @@ def load_prod(conn):
         list: A list of products from the database.
     """
     cur = conn.cursor()
-    cur.execute("SELECT * FROM products WHERE user_id = ?", (logged_in_user_id,))
+    cur.execute("SELECT * FROM products")
     rows = cur.fetchall()
 
     # Format the results into a list of dictionaries for easier usage in the GUI
@@ -631,6 +815,48 @@ def load_prod(conn):
         products.append(product)
     
     return products
+
+# Check Stocks
+def check_stock(conn):
+    cur = conn.cursor()
+    
+    # Get today's date and calculate the date 10 days from now
+    today = date.today()
+    ten_days_later = today + timedelta(days=10)
+    
+    # Check for products with low stock (quantity <= 3)
+    cur.execute("SELECT name, quantity FROM products WHERE quantity <= 3")
+    low_stock = cur.fetchall()
+    
+    # Format the date range for comparison (in mm/dd/yy format)
+    today_str = today.strftime('%m/%d/%y')
+    ten_days_later_str = ten_days_later.strftime('%m/%d/%y')
+    
+    # Check for products with expiration dates within the next 10 days
+    cur.execute("""
+        SELECT name, expiration 
+        FROM products 
+        WHERE expiration >= ? 
+        AND expiration <= ?
+    """, (today_str, ten_days_later_str))
+    expiring_items = cur.fetchall()
+    
+    # Prepare messages
+    message = ""
+    
+    if low_stock:
+        message += "The following items are low in stock:\n"
+        message += "\n".join([f"{item[0]} (Quantity: {item[1]})" for item in low_stock]) + "\n"
+
+    if expiring_items:
+        message += "\nThe following items are expiring soon (within 10 days):\n"
+        message += "\n".join([f"{item[0]} (Expiration: {item[1]})" for item in expiring_items]) + "\n"
+    
+    # Display message(s)
+    if message:
+        messagebox.showwarning("Stock and Expiry Alert", message)
+    else:
+        messagebox.showinfo("Stock Status", "All items have sufficient stock and no items are expiring soon.")
 
 # Add New Product
 def add_prod(panel):
@@ -663,34 +889,34 @@ def add_prod(panel):
     sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
     sub_frame.pack(pady=20)
 
-    instructions = tk.Label(sub_frame, text="Fill in the information for the NEW product.")
+    instructions = tk.Label(sub_frame, text="Fill in the information for NEW product.", bg=sub_frame.cget('bg'))
     instructions.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
     # Product Name Input
-    prod_name_label = tk.Label(sub_frame, text="Product Name:")
+    prod_name_label = tk.Label(sub_frame, text="Product Name:", bg=sub_frame.cget('bg'))
     prod_name_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
     prod_name_input = tk.Entry(sub_frame)
     prod_name_input.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
     prod_name_input.bind("<FocusOut>", lambda event, entry=prod_name_input: check_special_chars(entry))
 
     # Quantity Input
-    qty_label = tk.Label(sub_frame, text="Quantity:")
+    qty_label = tk.Label(sub_frame, text="Quantity:", bg=sub_frame.cget('bg'))
     qty_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
     qty_input = tk.Entry(sub_frame)
     qty_input.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
     # Food Group (Radio buttons)
-    group_label = tk.Label(sub_frame, text="Food Group:")
+    group_label = tk.Label(sub_frame, text="Food Group:", bg=sub_frame.cget('bg'))
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
     var1 = tk.IntVar(master=root)
     food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
-        radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
+        radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i, bg=sub_frame.cget('bg'))
         radio.grid(row=3 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
     # Nutritional Information (Check buttons)
-    info_label = tk.Label(sub_frame, text="Nutritional Information:")
+    info_label = tk.Label(sub_frame, text="Nutritional Information:", bg=sub_frame.cget('bg'))
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
     nutrition_vars = {
@@ -705,29 +931,33 @@ def add_prod(panel):
     }
 
     for i, (text, var) in enumerate(nutrition_vars.items(), start=1):
-        check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0)
+        check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0, bg=sub_frame.cget('bg'))
         check.grid(row=6 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
     # Experation Date
-    exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):")
+    exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):", bg=sub_frame.cget('bg'))
     exp_date_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.E)
     exp_date_entry = tk.Entry(sub_frame)
     exp_date_entry.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
     exp_date_entry.bind("<FocusOut>", lambda event: format_date(exp_date_entry))
 
     # Date Added
-    add_date_label = tk.Label(sub_frame, text="Date Added (MM/DD/YY):")
+    today_date = date.today().strftime("%m/%d/%y")
+
+    add_date_label = tk.Label(sub_frame, text="Date Added (MM/DD/YY):", bg=sub_frame.cget('bg'))
     add_date_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.E)
     add_date_entry = tk.Entry(sub_frame)
     add_date_entry.grid(row=11, column=1, padx=5, pady=5, sticky=tk.W)
+    add_date_entry.insert(0, today_date)
     add_date_entry.bind("<FocusOut>", lambda event: format_date(add_date_entry))
 
-    # User Name Input
-    user_name_label = tk.Label(sub_frame, text="User Name:")
-    user_name_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.E)
-    user_name_input = tk.Entry(sub_frame)
-    user_name_input.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
-    user_name_input.bind("<FocusOut>", lambda event, entry=user_name_input: check_special_chars(entry))
+    # User ID 
+    user_id_label = tk.Label(sub_frame, text="User ID:", bg=sub_frame.cget('bg'))
+    user_id_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.E)
+    user_id_input = tk.Entry(sub_frame)
+    user_id_input.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
+    user_id_input.insert(0, logged_in_user_id)
+    user_id_input.bind("<FocusOut>", lambda event, entry=user_id_input: check_special_chars(entry))
 
     # Collect and Store Data
     def store():
@@ -818,6 +1048,30 @@ def update_prod(panel):
 
     # Prints the selected product's information 
     def grab_data():
+        # Clear all fields before grabbing data
+        prod_name_input.delete(0, tk.END)
+        qty_input.delete(0, tk.END)
+        var1.set(None)  # Reset food group radio button
+        veg_var.set(0)
+        vegan_var.set(0)
+        gluten_var.set(0)
+        lactose_var.set(0)
+        eggs_var.set(0)
+        nuts_var.set(0)
+        halal_var.set(0)
+        kosher_var.set(0)
+        date_entry.delete(0, tk.END)
+        add_entry.delete(0, tk.END)
+        user_id_input.delete(0, tk.END)
+        
+        # Clear the product name, expiration date, and date added
+        prod_name_input.config(state='normal')  # Enable the input field for product name
+        prod_name_input.delete(0, tk.END)
+        date_entry.config(state='normal')  # Enable the expiration date field
+        date_entry.delete(0, tk.END)
+        add_entry.config(state='normal')  # Enable the add date field
+        add_entry.delete(0, tk.END)
+        
         selection = users_listbox.curselection()  # Get current selection
         if not selection:
             messagebox.showwarning("No Selection", "Please select a product to grab.")
@@ -829,12 +1083,10 @@ def update_prod(panel):
         
         if product:
             # Populate the text field with the product's name
-            prod_name_input.delete(0, tk.END)
             prod_name_input.insert(0, product["Name"])
-            prod_name_input.config(state='readonly')
+            prod_name_input.config(state='readonly')  # Make the name field readonly
 
             # Populate the text field with the product's qty
-            qty_input.delete(0, tk.END)
             qty_input.insert(0, product["Quantity"])
 
             # Set the food group radio button
@@ -852,26 +1104,27 @@ def update_prod(panel):
             kosher_var.set(info.get("Kosher", 0))
 
             # Set expiration date
-            date_entry.delete(0, tk.END)
             date_entry.insert(0, product["Exp"])
             date_entry.config(state='readonly')
 
             # Set the date added
-            add_entry.delete(0, tk.END)
             add_entry.insert(0, product["Add"])
+            add_entry.config(state='readonly')
 
             # Populate the text field with the product's user
-            user_name_input.delete(0, tk.END)
-            user_name_input.insert(0, product["User"])
+            user_id_input.insert(0, product["User"])
+            user_id_input.config(state='readonly')
 
     # Stores the updated product into the JSON file with its updates    
     def store():
+        # Get values from the input fields
         name = prod_name_input.get()
         quantity = qty_input.get()
-        group = var1.get()
+        group = var1.get()  # Selected food group
         exp_date = date_entry.get()
         add_date = add_entry.get()
 
+        # Nutritional information from checkboxes
         nutritional_info = {
             "Vegetarian": veg_var.get(),
             "Vegan": vegan_var.get(),
@@ -883,24 +1136,54 @@ def update_prod(panel):
             "Kosher": kosher_var.get(),
         }
 
-        conn = connect_db()
-        cur = conn.cursor()
+        # Ensure the user ID is the currently logged-in user
+        user_id = logged_in_user_id
 
-        # Update the product in the database
-        cur.execute('''UPDATE products 
-                       SET quantity = ?
-                       WHERE name = ? AND expiration = ?''',
-                    (quantity, name, exp_date))
+        # Validate quantity input
+        try:
+            quantity = int(quantity)  # Ensure it's an integer
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter a valid quantity (numeric).")
+            return
 
-        conn.commit()
-        messagebox.showinfo("Success", "Product updated successfully!")
+        # Connect to the database
+        try:
+            conn = connect_db()
+            cur = conn.cursor()
+
+            # Update the product in the database
+            cur.execute('''UPDATE products 
+                        SET quantity = ?, "group" = ?, expiration = ?, "add" = ?, user_id = ?, 
+                            vegetarian = ?, vegan = ?, gluten = ?, lactose = ?, eggs = ?, nuts = ?, halal = ?, kosher = ?
+                        WHERE name = ? AND expiration = ?''',
+                        (quantity, group, exp_date, add_date, user_id, 
+                        nutritional_info["Vegetarian"], nutritional_info["Vegan"], nutritional_info["Gluten"], 
+                        nutritional_info["Lactose"], nutritional_info["Eggs"], nutritional_info["Nuts"], 
+                        nutritional_info["Halal"], nutritional_info["Kosher"],
+                        name, exp_date))
+
+            conn.commit()
+            messagebox.showinfo("Success", "Product updated successfully!")
+        
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+        finally:
+            conn.close() 
+
+    # Set up for the Add Panel
+    sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
+    sub_frame.pack(pady=20)
+
+    # Directions
+    prod_name_label = tk.Label(sub_frame, text="To get information, highlight the product and hit the Grab Button", bg=sub_frame.cget('bg'))
+    prod_name_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
 
     # Divide screen
-    main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL)
+    main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL, bg=panel.cget('bg'))
     main_pane.pack(fill=tk.BOTH, expand=True)
 
     # Left side = Product List
-    left_frame = tk.Frame(main_pane)
+    left_frame = tk.Frame(main_pane, bg=panel.cget('bg'))
     main_pane.add(left_frame, width=200)
 
     # "Click to Grab Produce" button
@@ -917,37 +1200,37 @@ def update_prod(panel):
         users_listbox.insert(tk.END, str(prod["Name"] + " " + prod["Exp"]))
 
     # Right side = Product Information
-    right_frame = tk.Frame(main_pane)
+    right_frame = tk.Frame(main_pane, bg=panel.cget('bg'))
     main_pane.add(right_frame)
     
     sub_frame = tk.Frame(right_frame, bg=right_frame.cget('bg'))
     sub_frame.pack(pady=20)
 
     # Product Name Input
-    prod_name_label = tk.Label(sub_frame, text="Product Name:")
+    prod_name_label = tk.Label(sub_frame, text="Product Name:", bg=sub_frame.cget('bg'))
     prod_name_label.grid(row=1, column=0, padx=5, pady=5, sticky=tk.E)
     prod_name_input = tk.Entry(sub_frame)
     prod_name_input.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
     prod_name_input.bind("<FocusOut>", lambda event, entry=prod_name_input: check_special_chars(entry))
 
     # Quantity Input
-    qty_label = tk.Label(sub_frame, text="Quantity:")
+    qty_label = tk.Label(sub_frame, text="Quantity:", bg=sub_frame.cget('bg'))
     qty_label.grid(row=2, column=0, padx=5, pady=5, sticky=tk.E)
     qty_input = tk.Entry(sub_frame)
     qty_input.grid(row=2, column=1, padx=5, pady=5, sticky=tk.W)
 
     # Food Group (Radio buttons)
-    group_label = tk.Label(sub_frame, text="Food Group:")
+    group_label = tk.Label(sub_frame, text="Food Group:", bg=sub_frame.cget('bg'))
     group_label.grid(row=3, column=0, padx=5, pady=5, sticky=tk.E)
 
     var1 = tk.IntVar(master=root)
     food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
     for i, group in enumerate(food_groups, start=1):
-        radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i)
+        radio = tk.Radiobutton(sub_frame, text=group, variable=var1, value=i, bg=sub_frame.cget('bg'))
         radio.grid(row=3 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
     # Nutritional Information (Check buttons)
-    info_label = tk.Label(sub_frame, text="Nutritional Information:")
+    info_label = tk.Label(sub_frame, text="Nutritional Information:", bg=sub_frame.cget('bg'))
     info_label.grid(row=6, column=0, padx=5, pady=5, sticky=tk.E)
 
     veg_var, vegan_var, gluten_var, lactose_var, eggs_var, nuts_var, halal_var, kosher_var = (tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root), tk.IntVar(master=root))
@@ -963,29 +1246,30 @@ def update_prod(panel):
     }
 
     for i, (text, var) in enumerate(check_vars.items(), start=1):
-        check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0)
+        check = tk.Checkbutton(sub_frame, text=text, variable=var, onvalue=1, offvalue=0, bg=sub_frame.cget('bg'))
         check.grid(row=6 + (i-1)//2, column=1 + (i-1)%2, padx=5, pady=5, sticky=tk.W)
 
     # Expiration Date
-    exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):")
+    exp_date_label = tk.Label(sub_frame, text="Exp Date (MM/DD/YY):", bg=sub_frame.cget('bg'))
     exp_date_label.grid(row=10, column=0, padx=5, pady=5, sticky=tk.E)
     date_entry = tk.Entry(sub_frame)
     date_entry.grid(row=10, column=1, padx=5, pady=5, sticky=tk.W)
     date_entry.bind("<FocusOut>", lambda e: format_date(date_entry)) 
 
     # Date Added
-    add_date_label = tk.Label(sub_frame, text="Add Date (MM/DD/YY):")
+    add_date_label = tk.Label(sub_frame, text="Add Date (MM/DD/YY):", bg=sub_frame.cget('bg'))
     add_date_label.grid(row=11, column=0, padx=5, pady=5, sticky=tk.E)
     add_entry = tk.Entry(sub_frame)
     add_entry.grid(row=11, column=1, padx=5, pady=5, sticky=tk.W)
     add_entry.bind("<FocusOut>", lambda e: format_date(add_entry)) 
 
-    # User Name Input
-    user_name_label = tk.Label(sub_frame, text="User Name:")
-    user_name_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.E)
-    user_name_input = tk.Entry(sub_frame)
-    user_name_input.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
-    user_name_input.bind("<FocusOut>", lambda event, entry=user_name_input: check_special_chars(entry))
+    # User ID 
+    user_id_label = tk.Label(sub_frame, text="User ID:", bg=sub_frame.cget('bg'))
+    user_id_label.grid(row=12, column=0, padx=5, pady=5, sticky=tk.E)
+    user_id_input = tk.Entry(sub_frame)
+    user_id_input.grid(row=12, column=1, padx=5, pady=5, sticky=tk.W)
+    user_id_input.insert(0, logged_in_user_id)
+    user_id_input.bind("<FocusOut>", lambda event, entry=user_id_input: check_special_chars(entry))
 
     # Update button
     update_btn = tk.Button(sub_frame, text="Update", command=store)
@@ -1010,12 +1294,12 @@ def delete_prod(panel):
     def refresh_listbox():
         users_listbox.delete(0, tk.END)  # Clear the current listbox
         cur = conn.cursor()
-        cur.execute("SELECT name, expiration FROM products WHERE user_id = ?", (logged_in_user_id,))
+        cur.execute("SELECT name, expiration FROM products")
         products = cur.fetchall()
 
         for product in products:
-            # Display product name and expiration date in the listbox
-            display_text = f"{product[0]} {product[1]}"
+            # Use a clear delimiter (e.g., '|') for display
+            display_text = f"{product[0]} | {product[1]}"
             users_listbox.insert(tk.END, display_text)
 
     # Function to find a product by name
@@ -1023,12 +1307,12 @@ def delete_prod(panel):
         search_query = search_entry.get().lower()
         users_listbox.delete(0, tk.END)
         cur = conn.cursor()
-        cur.execute("SELECT name, expiration FROM products WHERE name LIKE ? AND user_id = ?", ('%' + search_query + '%', logged_in_user_id))
+        cur.execute("SELECT name, expiration FROM products WHERE name LIKE ?", ('%' + search_query + '%',))
         results = cur.fetchall()
 
         for result in results:
             # Display product name and expiration date in the listbox
-            display_text = f"{result[0]} - Exp: {result[1]}"
+            display_text = f"{result[0]} | {result[1]}"
             users_listbox.insert(tk.END, display_text)
 
     # Function to remove the selected product
@@ -1039,13 +1323,20 @@ def delete_prod(panel):
             return
 
         # Extract the product name and expiration date from the selected text
-        selected_product, selected_expiration = selected_text.split(" ")
-        
+        try:
+            selected_product, selected_expiration = selected_text.split(" | ")
+        except ValueError:
+            messagebox.showerror("Parsing Error", "Could not parse the selected product. Please try again.")
+            return
+
         # Confirm deletion
-        response = messagebox.askyesno("Delete Confirmation", f"Are you sure you want to delete '{selected_product}' with expiration date '{selected_expiration}'?")
+        response = messagebox.askyesno(
+            "Delete Confirmation",
+            f"Are you sure you want to delete '{selected_product}' with expiration date '{selected_expiration}'?"
+        )
         if response:
             cur = conn.cursor()
-            cur.execute("DELETE FROM products WHERE name = ? AND expiration = ? AND user_id = ?", (selected_product, selected_expiration, logged_in_user_id))
+            cur.execute("DELETE FROM products WHERE name = ? AND expiration = ?", (selected_product, selected_expiration))
             conn.commit()
 
             messagebox.showinfo("Success", f"Product '{selected_product}' with expiration date '{selected_expiration}' deleted successfully!")
@@ -1055,7 +1346,7 @@ def delete_prod(panel):
     sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
     sub_frame.pack(pady=20)
 
-    instructions = tk.Label(sub_frame, text="Search for the product to delete:")
+    instructions = tk.Label(sub_frame, text="Search for the product to delete:", bg=sub_frame.cget('bg'))
     instructions.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
 
     search_entry = tk.Entry(sub_frame)
@@ -1116,7 +1407,7 @@ def search_prod(panel):
                     "Halal": prod[12],
                     "Kosher": prod[13]
                 }.items() if value == 1]) or "None"
-                result_text.insert(tk.END, f"{prod[0]} - {prod[1]} QTY - {group_name} - {nutritional_info_str}\n Expiration: {prod[3]} - Added: {prod[4]}\n")
+                result_text.insert(tk.END, f"{prod[0]} - {prod[1]} QTY - {group_name} - {nutritional_info_str}\n Expiration: {prod[3]} - Added: {prod[4]} - User ID: {prod[5]}\n")
         else:
             result_text.insert(tk.END, "No products found.\n")
 
@@ -1124,7 +1415,7 @@ def search_prod(panel):
     def search_by_name():
         search_query = name_entry.get().lower()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM products WHERE name LIKE ? AND user_id = ?", ('%' + search_query + '%', logged_in_user_id))
+        cur.execute("SELECT * FROM products WHERE name LIKE ?", ('%' + search_query + '%',))
         filtered_products = cur.fetchall()
         display_results(filtered_products)
 
@@ -1133,7 +1424,7 @@ def search_prod(panel):
     top_frame.pack(pady=10)
 
     # Search by name
-    name_label = tk.Label(top_frame, text="Search by Name:")
+    name_label = tk.Label(top_frame, text="Search by Name:", bg=top_frame.cget('bg'))
     name_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
 
     name_entry = tk.Entry(top_frame)
@@ -1146,11 +1437,13 @@ def search_prod(panel):
     bottom_frame = tk.Frame(panel, bg=panel.cget('bg'))
     bottom_frame.pack(pady=10)
 
-    result_label = tk.Label(bottom_frame, text="Search Results:")
+    result_label = tk.Label(bottom_frame, text="Search Results:", bg=bottom_frame.cget('bg'))
     result_label.pack(pady=5)
 
     result_text = tk.Text(bottom_frame, height=15, width=80)
     result_text.pack(pady=5)
+
+    return
 
 # Open the HTML file in a web browser
 def open_html(file_path):
@@ -1265,23 +1558,17 @@ def main():
     # Checks if Agreement is true
     if not check_agreements():
         return
-    root = main_window()
+
+    # Create the database connection
+    conn = connect_db()
+
+    # Ensure the tables exist
+    create_users(conn)
+    create_products(conn)
+
+    # Now pass conn to the main window
+    root = main_window(conn)
     root.protocol("WM_DELETE_WINDOW", sys.exit)
-
-    conn = connect_db()   # Connect to the database
-    #fill_products(conn)
-    create_users(conn)    # Ensure the table exists
-    create_products(conn) # Ensure the table exists
-
-    # Create a frame for buttons and panel for content
-    frame = tk.Frame(root)
-    frame.pack(side=tk.TOP, pady=20)
-
-    panel = tk.Frame(root)
-    panel.pack(side=tk.TOP, pady=20)
-
-    # Create buttons and pass the panel for content display
-    create_buttons(frame, panel)
 
     # Start the Tkinter main loop
     root.mainloop()
