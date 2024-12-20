@@ -38,10 +38,15 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import pyotp
 import time
+import google.generativeai as genai
 
 # Constants
 HEIGHT = 3
 WIDTH = 20
+
+# AI Generator
+genai.configure(api_key="AIzaSyDWt5mSeJpWAruI4UEjyMn616BDqvm6CsE")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Colors
 LIGHT_BG = "alice blue"      # Light mode color for root, frames, etc.
@@ -465,6 +470,39 @@ def login_window():
 
     login_root.mainloop()
 
+# Fetches Products from Database
+def get_ingredients_from_db():
+    """Retrieve a list of ingredients from the fridge database"""
+    conn = connect_db()
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM products WHERE user_id = ?", (logged_in_user_id,))
+    rows = cur.fetchall()
+    return [row[0] for row in rows]
+
+# Use AI to Generate Recipes
+def suggest_recipes(ingredients):
+    """Use ChatGPT to suggest recipes based on available ingredients"""
+    prompt = f"Here are the ingredients in my fridge: {', '.join(ingredients)}. Can you suggest some recipes?"
+    response = model.generate_content(prompt)
+    return response.text
+
+# Display Recipes
+def show_recipe_suggestions(panel):
+    """Display recipe suggestions in the GUI"""
+    ingredients = get_ingredients_from_db()
+    recipes = suggest_recipes(ingredients)
+
+    # Clear panel
+    for widget in panel.winfo_children():
+        widget.destroy()
+
+    result_label = tk.Label(panel, text="Recipe Suggestions:", bg="lightblue", font=("Arial", 14, "bold"))
+    result_label.pack(pady=10)
+
+    result_text = tk.Text(panel, height=30, width=90, bg="lightyellow", font=("Arial", 12))
+    result_text.insert(tk.END, recipes)
+    result_text.pack(padx=10, pady=10)
+
 # Main Window
 def main_window(conn):
     """
@@ -635,6 +673,7 @@ def create_buttons(frame, panel, switch_value):
     buttons[0].config(height=HEIGHT, width=WIDTH)  
     return buttons
 
+BUTTON_TEXTS.append("RECIPE SUGGESTIONS")
 # Button Panel
 def create_panel(index, panel):
     """
@@ -663,8 +702,10 @@ def create_panel(index, panel):
         update_prod(panel)
     elif index == 2:    # Delete existing product
         delete_prod(panel)
-    else:               # Search for product
+    elif index == 3:    # Search for product
         search_prod(panel)
+    else:               # Provide AI recipes
+        show_recipe_suggestions(panel)
 
 # Check for Special Characters
 def check_special_chars(entry):
