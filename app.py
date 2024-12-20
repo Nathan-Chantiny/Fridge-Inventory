@@ -622,7 +622,7 @@ def main_window(conn):
     global root
     root = tk.Tk()
     root.title("FoodConnect")
-    root.geometry('900x800')
+    root.geometry('1500x800')
     root.config(bg=LIGHT_BG)
 
     light = Image.open(os.path.join(CURRENT_DIR, "light.png"))
