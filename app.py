@@ -69,7 +69,7 @@ else:
     CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Button Text
-BUTTON_TEXTS = ["ADD", "UPDATE", "DELETE", "SEARCH"]
+BUTTON_TEXTS = ["HOME", "ADD", "UPDATE", "DELETE", "SEARCH", "RECIPE SUGGESTIONS"]
 
 # Ensure you have a list of food groups
 food_groups = ["Dairy", "Fruits", "Vegetables", "Grains", "Protein", "Other"]
@@ -83,7 +83,6 @@ VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
 # 2FA key
 key = "FoodConnectAuthenticationKey"
 totp = pyotp.TOTP(key, interval=60)
-
 
 # Userid to identify user currently active
 global logged_in_user_id
@@ -493,7 +492,7 @@ def get_ingredients_from_db():
     """Retrieve a list of ingredients from the fridge database"""
     conn = connect_db()
     cur = conn.cursor()
-    cur.execute("SELECT name FROM products WHERE user_id = ?", (logged_in_user_id,))
+    cur.execute("SELECT name FROM products")
     rows = cur.fetchall()
     return [row[0] for row in rows]
 
@@ -520,6 +519,94 @@ def show_recipe_suggestions(panel):
     result_text = tk.Text(panel, height=30, width=90, bg="lightyellow", font=("Arial", 12))
     result_text.insert(tk.END, recipes)
     result_text.pack(padx=10, pady=10)
+
+# Create the HOME Tab
+def home_tab(panel):
+    """
+    Displays the HOME tab, which shows information about low stock and expiring items.
+
+    Args:
+        panel (Tkinter Frame): The frame to display the HOME content.
+
+    Returns:
+        None
+    """
+    # Clear the panel first
+    for widget in panel.winfo_children():
+        widget.destroy()
+
+    # Fetch stock and expiry data
+    conn = connect_db()
+    cur = conn.cursor()
+
+    # Create two columns
+    left_frame = tk.Frame(panel, bg=panel.cget('bg'))
+    left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    right_frame = tk.Frame(panel, bg=panel.cget('bg'))
+    right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    # Left Column: Stock and Expiry Updates
+    stock_label = tk.Label(left_frame, text="Stock & Expiry Updates", bg=left_frame.cget('bg'), font=("Arial", 14, "bold"))
+    stock_label.pack(pady=10)
+
+    stock_text = tk.Text(left_frame, wrap=tk.WORD, height=20, width=40, bg="lightyellow")
+    stock_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    # Get today's date and calculate the date 10 days from now
+    today = date.today()
+    ten_days_later = today + timedelta(days=10)
+
+    # Check for low stock
+    cur.execute("SELECT name, quantity FROM products WHERE quantity <= 3")
+    low_stock = cur.fetchall()
+
+    # Format the date range for comparison (in mm/dd/yy format)
+    today_str = today.strftime('%m/%d/%y')
+    ten_days_later_str = ten_days_later.strftime('%m/%d/%y')
+
+    # Check for products with expiration dates within the next 10 days
+    cur.execute("""SELECT name, expiration FROM products WHERE expiration >= ? AND expiration <= ?""", (today_str, ten_days_later_str))
+    expiring_items = cur.fetchall()
+
+    # Build the message
+    message = ""
+
+    if low_stock:
+        message += "The following items are low in stock:\n"
+        message += "\n".join([f"{item[0]} (Quantity: {item[1]})" for item in low_stock]) + "\n"
+
+    if expiring_items:
+        message += "\nThe following items are expiring soon (within 10 days):\n"
+        message += "\n".join([f"{item[0]} (Expiration: {item[1]})" for item in expiring_items]) + "\n"
+
+    if not message:
+        message = "All items are sufficiently stocked, and no items are expiring soon."
+
+    # Display the message in the text widget
+    stock_text.insert(tk.END, message)
+    stock_text.config(state=tk.DISABLED)  # Make the text widget read-only
+
+    stock_text.config(state=tk.DISABLED)
+
+    # Right Column: Inventory List
+    inventory_label = tk.Label(right_frame, text="Current Inventory", bg=right_frame.cget('bg'), font=("Arial", 14, "bold"))
+    inventory_label.pack(pady=10)
+
+    inventory_text = tk.Text(right_frame, wrap=tk.WORD, height=20, width=40, bg="lightcyan")
+    inventory_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    # Fetch inventory list
+    cur.execute("SELECT name, quantity, expiration FROM products ORDER BY name")
+    inventory = cur.fetchall()
+
+    if inventory:
+        for item in inventory:
+            inventory_text.insert(tk.END, f"{item[0]} - {item[1]} QTY - Expires: {item[2]}\n")
+    else:
+        inventory_text.insert(tk.END, "No items in inventory.\n")
+
+    inventory_text.config(state=tk.DISABLED)
 
 # Main Window
 def main_window(conn):
@@ -630,6 +717,7 @@ def main_window(conn):
 
     # Pass switch_value to create_buttons
     create_buttons(frame, panel, switch_value)
+    create_panel(0, panel)  # Default to Home Tab (index 0)
 
     return root
 
@@ -691,7 +779,6 @@ def create_buttons(frame, panel, switch_value):
     buttons[0].config(height=HEIGHT, width=WIDTH)  
     return buttons
 
-BUTTON_TEXTS.append("RECIPE SUGGESTIONS")
 # Button Panel
 def create_panel(index, panel):
     """
@@ -714,15 +801,18 @@ def create_panel(index, panel):
     """
     for widget in panel.winfo_children():
         widget.destroy()
-    if index == 0:      # Add new product
+
+    if index == 0:      # Home tab
+        home_tab(panel)
+    elif index == 1:    # Add new product
         add_prod(panel)
-    elif index == 1:    # Update existing product
+    elif index == 2:    # Update existing product
         update_prod(panel)
-    elif index == 2:    # Delete existing product
+    elif index == 3:    # Delete existing product
         delete_prod(panel)
-    elif index == 3:    # Search for product
+    elif index == 4:    # Search for product
         search_prod(panel)
-    else:               # Provide AI recipes
+    elif index == 5:    # Provide AI recipes
         show_recipe_suggestions(panel)
 
 # Check for Special Characters
