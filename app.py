@@ -37,18 +37,25 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import pyotp
+import time
 
 # Constants
 HEIGHT = 3
 WIDTH = 20
 
 # Colors
-LIGHT_BG = "alice blue"  # Light mode color for root, frames, etc.
-DARK_BG = "gray20"      # Dark mode color for root, frames, etc.
-FRAME_LIGHT_COLOR = "white"  # Light mode color for frames
-FRAME_DARK_COLOR = "gray15"     # Dark mode color for frames
-TEXT_LIGHT_COLOR = "black"  # Text color for light theme
-TEXT_DARK_COLOR = "dodger blue"  # Text color for dark theme
+LIGHT_BG = "alice blue"      # Light mode color for root, frames, etc.
+DARK_BG = "gray20"           # Dark mode color for root, frames, etc.
+MID_BG = "purple4"           # Mid mode color for root, frames, etc.
+FOREST_BG = "forestgreen" # Forest mode color for root, frames, etc.
+FRAME_LIGHT_COLOR = "white"         # Light mode color for frames
+FRAME_DARK_COLOR = "gray15"         # Dark mode color for frames
+FRAME_MID_COLOR = "indigo"          # Mid mode color for frames
+FRAME_FOREST_COLOR = "limegreen"  # Forest mode color for frames
+TEXT_LIGHT_COLOR = "black"        # Text color for light theme
+TEXT_DARK_COLOR = "dodger blue"   # Text color for dark theme
+TEXT_MID_COLOR = "magenta"        # Text color for mid theme
+TEXT_FOREST_COLOR = "darkgreen"  # Text color for forest theme
 
 # Checks if the script is running in a "frozen" state
 if getattr(sys, 'frozen', False):
@@ -70,7 +77,8 @@ VERIFICATION = os.path.join(CURRENT_DIR, "agreement.html")
 
 # 2FA key
 key = "FoodConnectAuthenticationKey"
-totp = pyotp.TOTP(key)
+totp = pyotp.TOTP(key, interval=60)
+
 
 # Userid to identify user currently active
 global logged_in_user_id
@@ -202,7 +210,7 @@ def send_2fa_email(email, code):
     smtp_port = 587
 
     subject = "Your FoodConnect 2FA Code"
-    body = f"Your 2FA code is: {code}. It is valid for 30 seconds."
+    body = f"Your 2FA code is: {code}. It is valid for 60 seconds."
 
     msg = MIMEMultipart()
     msg["From"] = sender_email
@@ -221,12 +229,23 @@ def send_2fa_email(email, code):
 
 # 2FA verification screen
 def two_factor_window(user_email):
-    code = totp.now()
-    send_2fa_email(user_email, code)
+    def send_code():
+        nonlocal start_time
+        start_time = time.time()
+        code = totp.now()
+        send_2fa_email(user_email, code)
+        messagebox.showinfo("Info", "A new 2FA code has been sent to your email.")
+
+    # Initialize start_time when the window opens
+    start_time = time.time()
+    send_code()  # Send the initial code
 
     def verify_code():
         entered_code = code_entry.get()
-        if entered_code == code:
+        elapsed_time = time.time() - start_time
+        if elapsed_time > 60:
+            messagebox.showerror("Error", "The code has expired. Please resend the code.")
+        elif totp.verify(entered_code):
             messagebox.showinfo("Success", "2FA verification successful!")
             two_fa_root.destroy()
             main()  # Proceed to the main application
@@ -243,6 +262,9 @@ def two_factor_window(user_email):
 
     verify_button = tk.Button(two_fa_root, text="Verify", command=verify_code)
     verify_button.pack(pady=10)
+
+    resend_button = tk.Button(two_fa_root, text="Resend Code", command=send_code)
+    resend_button.pack(pady=5)
 
     two_fa_root.mainloop()
 
@@ -462,12 +484,16 @@ def main_window(conn):
 
     light = Image.open(os.path.join(CURRENT_DIR, "light.png"))
     dark = Image.open(os.path.join(CURRENT_DIR, "dark.png"))
+    mid = Image.open(os.path.join(CURRENT_DIR, "star.png"))
+    forest = Image.open(os.path.join(CURRENT_DIR, "forest.png"))
     bell = Image.open(os.path.join(CURRENT_DIR, "bell.png"))
     root.light_image = ImageTk.PhotoImage(light, master=root)
     root.dark_image = ImageTk.PhotoImage(dark, master=root)
+    root.mid_image = ImageTk.PhotoImage(mid, master=root)
+    root.forest_image = ImageTk.PhotoImage(forest, master=root)
     root.notify_image = ImageTk.PhotoImage(bell, master=root)
 
-    switch_value = True
+    switch_value = 0
 
     # Frames must be created before the toggle function
     frame = tk.Frame(root, bg=FRAME_LIGHT_COLOR)
@@ -488,24 +514,41 @@ def main_window(conn):
         for child in widget.winfo_children():
             apply_theme(child, bg_color, fg_color)
 
-    def toggle():
+    def toggle(): 
         nonlocal switch_value
 
         # Dark theme
-        if switch_value:
+        if switch_value == 0:
             switch.config(image=root.dark_image, bg=DARK_BG, activebackground=DARK_BG)
             root.config(bg=DARK_BG)
             apply_theme(panel, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
             apply_theme(frame, FRAME_DARK_COLOR, TEXT_DARK_COLOR)
-            switch_value = False
+            switch_value = 1
+
+        # Mid theme
+        elif switch_value == 1:
+            switch.config(image=root.mid_image, bg=MID_BG, activebackground=MID_BG)
+            root.config(bg=MID_BG)
+            apply_theme(panel, FRAME_MID_COLOR, TEXT_MID_COLOR)
+            apply_theme(frame, FRAME_MID_COLOR, TEXT_MID_COLOR)
+            switch_value = 2
+
+        # Forest theme
+        elif switch_value == 2:
+            switch.config(image=root.forest_image, bg=FOREST_BG, activebackground=FOREST_BG)
+            root.config(bg=FOREST_BG)
+            apply_theme(panel, FRAME_FOREST_COLOR, TEXT_FOREST_COLOR)
+            apply_theme(frame, FRAME_FOREST_COLOR, TEXT_FOREST_COLOR)
+            switch_value = 3
 
         # Light theme
-        else:
+        elif switch_value == 3:
             switch.config(image=root.light_image, bg=LIGHT_BG, activebackground=LIGHT_BG)
             root.config(bg=LIGHT_BG)
             apply_theme(panel, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
             apply_theme(frame, FRAME_LIGHT_COLOR, TEXT_LIGHT_COLOR)
-            switch_value = True
+            switch_value = 0
+
 
     # Low Stock Check Button
     stock_button = tk.Button(
@@ -732,6 +775,7 @@ def load_prod(conn):
     
     return products
 
+# Check Stocks
 def check_stock(conn):
     cur = conn.cursor()
     
@@ -773,7 +817,6 @@ def check_stock(conn):
     else:
         messagebox.showinfo("Stock Status", "All items have sufficient stock and no items are expiring soon.")
 
-
 # Add New Product
 def add_prod(panel):
     """
@@ -805,7 +848,7 @@ def add_prod(panel):
     sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
     sub_frame.pack(pady=20)
 
-    instructions = tk.Label(sub_frame, text="Fill in the information for the NEW product.", bg=sub_frame.cget('bg'))
+    instructions = tk.Label(sub_frame, text="Fill in the information for NEW product.", bg=sub_frame.cget('bg'))
     instructions.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky=tk.W)
 
     # Product Name Input
@@ -1085,6 +1128,14 @@ def update_prod(panel):
             messagebox.showerror("Error", f"An error occurred: {str(e)}")
         finally:
             conn.close() 
+
+    # Set up for the Add Panel
+    sub_frame = tk.Frame(panel, bg=panel.cget('bg'))
+    sub_frame.pack(pady=20)
+
+    # Directions
+    prod_name_label = tk.Label(sub_frame, text="To get information, highlight the product and hit the Grab Button", bg=sub_frame.cget('bg'))
+    prod_name_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.E)
 
     # Divide screen
     main_pane = tk.PanedWindow(panel, orient=tk.HORIZONTAL, bg=panel.cget('bg'))
