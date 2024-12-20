@@ -94,8 +94,12 @@ root = None
 
 # Connect to the database (if it doesn't exist, it will be created)
 def connect_db(db_name='products.db'):
-    conn = sqlite3.connect(db_name)
-    return conn
+    try:
+        conn = sqlite3.connect(db_name)
+        return conn
+    except sqlite3.Error as e:
+        messagebox.showerror("Database Error", f"Failed to connect to the database: {e}")
+        sys.exit()  # Exit the program if the database is critical
 
 # Function to create a 'products' table if it doesn't already exist
 def create_products(conn):
@@ -209,69 +213,75 @@ class Product:
     
 # Send 2FA code to the user's email
 def send_2fa_email(email, code):
-    sender_email = "foodconnect3@gmail.com"
-    sender_password = "sokx umec amfv fdhe"
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-
-    subject = "Your FoodConnect 2FA Code"
-    body = f"Your 2FA code is: {code}. It is valid for 60 seconds."
-
-    msg = MIMEMultipart()
-    msg["From"] = sender_email
-    msg["To"] = email
-    msg["Subject"] = subject
-    
-    msg.attach(MIMEText(body, "plain"))
-
     try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, email, msg.as_string())
-    except Exception:
-        return 
+        sender_email = "foodconnect3@gmail.com"
+        sender_password = "sokx umec amfv fdhe"
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+
+        subject = "Your FoodConnect 2FA Code"
+        body = f"Your 2FA code is: {code}. It is valid for 60 seconds."
+
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = email
+        msg["Subject"] = subject
+        
+        msg.attach(MIMEText(body, "plain"))
+
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(sender_email, sender_password)
+                server.sendmail(sender_email, email, msg.as_string())
+        except Exception:
+            return
+    except Exception as e:
+        messagebox.showerror("Email Error", f"Failed to send email: {e}")
 
 # 2FA verification screen
 def two_factor_window(user_email):
-    def send_code():
-        nonlocal start_time
+    try:
+        def send_code():
+            nonlocal start_time
+            start_time = time.time()
+            code = totp.now()
+            send_2fa_email(user_email, code)
+            messagebox.showinfo("Info", "A new 2FA code has been sent to your email.")
+
+        # Initialize start_time when the window opens
         start_time = time.time()
-        code = totp.now()
-        send_2fa_email(user_email, code)
-        messagebox.showinfo("Info", "A new 2FA code has been sent to your email.")
+        send_code()  # Send the initial code
 
-    # Initialize start_time when the window opens
-    start_time = time.time()
-    send_code()  # Send the initial code
+        def verify_code():
+            entered_code = code_entry.get()
+            elapsed_time = time.time() - start_time
+            if elapsed_time > 60:
+                messagebox.showerror("Error", "The code has expired. Please resend the code.")
+            elif totp.verify(entered_code):
+                messagebox.showinfo("Success", "2FA verification successful!")
+                two_fa_root.destroy()
+                main()  # Proceed to the main application
+            else:
+                messagebox.showerror("Error", "Invalid 2FA code.")
 
-    def verify_code():
-        entered_code = code_entry.get()
-        elapsed_time = time.time() - start_time
-        if elapsed_time > 60:
-            messagebox.showerror("Error", "The code has expired. Please resend the code.")
-        elif totp.verify(entered_code):
-            messagebox.showinfo("Success", "2FA verification successful!")
-            two_fa_root.destroy()
-            main()  # Proceed to the main application
-        else:
-            messagebox.showerror("Error", "Invalid 2FA code.")
+        two_fa_root = tk.Tk()
+        two_fa_root.title("2FA Verification")
+        two_fa_root.geometry("300x200")
 
-    two_fa_root = tk.Tk()
-    two_fa_root.title("2FA Verification")
-    two_fa_root.geometry("300x200")
+        tk.Label(two_fa_root, text="Enter the 2FA code sent to your email:").pack(pady=10)
+        code_entry = tk.Entry(two_fa_root)
+        code_entry.pack(pady=5)
 
-    tk.Label(two_fa_root, text="Enter the 2FA code sent to your email:").pack(pady=10)
-    code_entry = tk.Entry(two_fa_root)
-    code_entry.pack(pady=5)
+        verify_button = tk.Button(two_fa_root, text="Verify", command=verify_code)
+        verify_button.pack(pady=10)
 
-    verify_button = tk.Button(two_fa_root, text="Verify", command=verify_code)
-    verify_button.pack(pady=10)
+        resend_button = tk.Button(two_fa_root, text="Resend Code", command=send_code)
+        resend_button.pack(pady=5)
 
-    resend_button = tk.Button(two_fa_root, text="Resend Code", command=send_code)
-    resend_button.pack(pady=5)
-
-    two_fa_root.mainloop()
+        two_fa_root.mainloop()
+    except Exception as e:
+        messagebox.showerror("Error", f"2FA error: {e}")
 
 # Simple login screen
 def login_window():
@@ -350,30 +360,38 @@ def login_window():
 
     # Function to handle login
     def login():
-        username = username_entry.get()
-        password = password_entry.get()
+        try:
+            username = username_entry.get()
+            password = password_entry.get()
 
-        conn = connect_db()
-        cur = conn.cursor()
-        cur.execute("SELECT password_hash, user_id, email, first_login FROM users WHERE username = ?", (username,))
-        row = cur.fetchone()
+            conn = connect_db()
+            cur = conn.cursor()
+            cur.execute("SELECT password_hash, user_id, email, first_login FROM users WHERE username = ?", (username,))
+            row = cur.fetchone()
 
-        if row and bcrypt.checkpw(password.encode(), row[0]):
-            global logged_in_user_id
-            logged_in_user_id = row[1]  # Store the logged-in user's ID
+            if row is None:
+                status_label.config(text="Invalid username or password", fg="red")
+                return
+
+            if row and bcrypt.checkpw(password.encode(), row[0]):
+                global logged_in_user_id
+                logged_in_user_id = row[1]  # Store the logged-in user's ID
             
-            if row[3]:  # Check if first_login is True (1)
-                send_feedback_email(row[2])  # Send feedback email
-                cur.execute("UPDATE users SET first_login = 0 WHERE user_id = ?", (logged_in_user_id,))
-                conn.commit()
+                if row[3]:  # Check if first_login is True (1)
+                    send_feedback_email(row[2])  # Send feedback email
+                    cur.execute("UPDATE users SET first_login = 0 WHERE user_id = ?", (logged_in_user_id,))
+                    conn.commit()
 
-            status_label.config(text="Login successful!", fg="green")
-            login_root.after(1000, login_root.destroy)  # Close login window after success
-            user_email = row[2]
-            two_factor_window(user_email)
-            main()  # Launch the main app after successful login
-        else:
-            status_label.config(text="Invalid username or password", fg="red")
+                status_label.config(text="Login successful!", fg="green")
+                #login_root.after(1000, login_root.destroy)  # Close login window after success
+                user_email = row[2]
+                login_root.destroy()
+                two_factor_window(user_email)
+                main()  # Launch the main app after successful login
+            else:
+                status_label.config(text="Invalid username or password", fg="red")
+        except Exception as e:
+            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
 
     # Function to handle sign-up
