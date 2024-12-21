@@ -264,9 +264,18 @@ def two_factor_window(user_email):
             else:
                 messagebox.showerror("Error", "Invalid 2FA code.")
 
+        def on_exit():
+            result = messagebox.askquestion("Exit", "Are you sure you want to exit? You will be redirected to the login screen.")
+            if result == 'yes':
+                two_fa_root.destroy()
+                login_window()
+
         two_fa_root = tk.Tk()
         two_fa_root.title("2FA Verification")
         two_fa_root.geometry("300x200")
+
+        # Handle window close event
+        two_fa_root.protocol("WM_DELETE_WINDOW", on_exit)
 
         tk.Label(two_fa_root, text="Enter the 2FA code sent to your email:").pack(pady=10)
         code_entry = tk.Entry(two_fa_root)
@@ -281,6 +290,7 @@ def two_factor_window(user_email):
         two_fa_root.mainloop()
     except Exception as e:
         messagebox.showerror("Error", f"2FA error: {e}")
+
 
 # Simple login screen
 def login_window():
